@@ -33,7 +33,7 @@ public  class UrlMapCreator
 
             var c = JsonSerializer.Deserialize<GetKkmStatusCommand>(jsonstring);
 
-            var kkmH = new KkmHelper(c.Connection);
+            var kkmH = new KkmHelper(c.Connection, c.KkmType);
 
             var a = kkmH.GetStatus();
 

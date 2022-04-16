@@ -1,4 +1,5 @@
-﻿using devicesConnector.Drivers;
+﻿using System.Text.Json;
+using devicesConnector.Drivers;
 using devicesConnector.Wrappers;
 
 namespace devicesConnector.FiscalRegistrar.Drivers.Russia;
@@ -21,18 +22,13 @@ public class KkmServerDevice : IFiscalRegistrarDevice
     {
         var c = new KkmServerDriver.KkmGetInfo();
 
-        var r = driver.SendCommand(c);
+     var r=  driver.SendCommand(c);
 
-        if (!r)
-        {
-            throw new Exception();
-
-
-        }
+     var answer =r.Rezult.Deserialize< KkmServerDriver.KkmServerKktInfoAnswer> ();
 
         var status = new KkmStatus
         {
-            SessionStatus = c.Data.Info.SessionState switch
+            SessionStatus = answer.Info.SessionState switch
             {
                 1 => KkmStatus.SessionStatuses.Close,
                 2 => KkmStatus.SessionStatuses.Open,
@@ -40,10 +36,10 @@ public class KkmServerDevice : IFiscalRegistrarDevice
                 _ => KkmStatus.SessionStatuses.Unknown
             },
             CheckStatus = KkmStatus.CheckStatuses.Close,
-            CheckNumber = c.Data.CheckNumber,
-            SessionNumber = c.Data.SessionNumber,
-            SoftwareVersion = c.Data.Info.Firmware_Version,
-            FnDateEnd = c.Data.Info.FN_DateEnd
+            CheckNumber = answer.CheckNumber,
+            SessionNumber = answer.SessionNumber,
+            SoftwareVersion = answer.Info.Firmware_Version,
+            FnDateEnd = answer.Info.FN_DateEnd
         };
 
 

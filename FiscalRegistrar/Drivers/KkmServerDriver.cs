@@ -17,172 +17,150 @@ public class KkmServerDriver
         _lanConnection = lanConnection;
     }
 
-    public bool SendCommand(KkmServerCommand command)
+    public KkmServerAnswer SendCommand(KkmServerCommand command)
     {
-
         command.Timeout = 1;
 
-        if (!DoCommand(command))
+       var r= DoCommand(command);
+
+
+        while (r.Status.IsEither(1, 4))
         {
-            return false;
+            Thread.Sleep(1_00);
+            r=GetResult(command);
         }
 
-        if (command.DeviceAnswer.Status.IsEither(1, 4))
+        if (r.Status != 0)
         {
-            bool r;
-            do
-            {
-                Thread.Sleep(1_00);
-                r = GetResult(command);
-            } while (command.DeviceAnswer.Status.IsEither(1, 4) && r);
+            throw new Exception(r.Error);
         }
-
-
-
-        var result = command.DeviceAnswer.Status == 0;
-
-        if (result == false)
-        {
-            throw new Exception( command.DeviceAnswer.Error);
-        }
-
-        return true;
-    }
-
-    private bool GetResult(KkmServerCommand command)
-    {
-        var c = new GetResultCommand { IdCommand = command.IdCommand, Timeout = 10 };
-        var r = DoCommand(c);
-
-        var rez = (dynamic)JsonNode.Parse(c.Answer);
-
-
-        command.Answer = rez["Rezult"].ToString();
-
-        //почему здесь так? наверно можно десериализовать весь объек же
-        command.DeviceAnswer.Status = JsonSerializer.Deserialize<DeviceAnswer>(command.Answer).Status;
-        command.DeviceAnswer.Error = JsonSerializer.Deserialize<DeviceAnswer>(command.Answer).Error;
 
         return r;
     }
 
-    private bool DoCommand(KkmServerCommand command)
+    private KkmServerAnswer GetResult(KkmServerCommand command)
     {
-       
-            var urlAddress = _lanConnection.HostUrl;
+        var c = new GetResultCommand {IdCommand = command.IdCommand, Timeout = 10};
+        return DoCommand(c);
 
-            if (urlAddress.ToLower().StartsWith(@"http://") == false)
-            {
-                urlAddress = @"http://" + urlAddress;
-            }
-
-            var url = urlAddress + @":" + _lanConnection.PortNumber + @"/Execute";
-
-            var credentialCache = new CredentialCache
-                {
-                    {
-                        new Uri(url), "Basic",
-                        new NetworkCredential(_lanConnection.UserLogin, _lanConnection.UserPassword)
-                    }
-                };
-
-            var httpWebRequest = (HttpWebRequest)WebRequest.Create(url);
-            httpWebRequest.Credentials = credentialCache;
-            httpWebRequest.ContentType = "application/json";
-            httpWebRequest.Method = "POST";
-
-            httpWebRequest.Timeout = 120_000;
-            httpWebRequest.ReadWriteTimeout = 120_000;
-            httpWebRequest.KeepAlive = false;
-            httpWebRequest.Headers.Add(HttpRequestHeader.CacheControl, "must-revalidate");
-            var ct = JsonSerializer.Serialize((object)command);
-
-            using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
-            {
-                streamWriter.Write(ct);
-            }
-
-            var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-
-            httpResponse.Headers.Add(HttpResponseHeader.CacheControl, "must-revalidate");
-            using (var streamReader =
-                new StreamReader(httpResponse.GetResponseStream() ?? throw new InvalidOperationException()))
-            {
-                command.Answer = streamReader.ReadToEnd();
-            }
+        //var rez = (dynamic) JsonNode.Parse(c.Answer);
 
 
-            command.DeviceAnswer = JsonSerializer.Deserialize<DeviceAnswer>(command.Answer);
+        //command.Answer = rez["Rezult"].ToString();
 
-            return true;
-   
+        ////почему здесь так? наверно можно десериализовать весь объек же
+        //command.DeviceAnswer.Status = (int) rez["Status"];
+        //command.DeviceAnswer.Error = rez["Error"].ToString();
     }
 
-    private interface IKkmSeverCommand
+    private KkmServerAnswer DoCommand(KkmServerCommand command)
     {
-        string Command { get; }
+        var urlAddress = _lanConnection.HostUrl;
+
+        if (urlAddress.ToLower().StartsWith(@"http://") == false)
+        {
+            urlAddress = @"http://" + urlAddress;
+        }
+
+        var url = urlAddress + @":" + _lanConnection.PortNumber + @"/Execute";
+
+        var credentialCache = new CredentialCache
+        {
+            {
+                new Uri(url), "Basic",
+                new NetworkCredential(_lanConnection.UserLogin, _lanConnection.UserPassword)
+            }
+        };
+
+        var httpWebRequest = (HttpWebRequest) WebRequest.Create(url);
+        httpWebRequest.Credentials = credentialCache;
+        httpWebRequest.ContentType = "application/json";
+        httpWebRequest.Method = "POST";
+
+        httpWebRequest.Timeout = 120_000;
+        httpWebRequest.ReadWriteTimeout = 120_000;
+        httpWebRequest.KeepAlive = false;
+        httpWebRequest.Headers.Add(HttpRequestHeader.CacheControl, "must-revalidate");
+
+        var ct = JsonSerializer.Serialize((object) command);
+
+        using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
+        {
+            streamWriter.Write(ct);
+        }
+
+        var httpResponse = (HttpWebResponse) httpWebRequest.GetResponse();
+        httpResponse.Headers.Add(HttpResponseHeader.CacheControl, "must-revalidate");
+
+        using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
+        {
+            var answer = streamReader.ReadToEnd();
+
+            var ksa = JsonSerializer.Deserialize<KkmServerAnswer>(answer);
+
+            return ksa;
+        }
 
 
     }
 
-    [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-    public abstract class KkmServerCommand 
+
+    /// <summary>
+    /// Абстрактный класс команды
+    /// </summary>
+    public abstract class KkmServerCommand
     {
+        /// <summary>
+        /// Имя команды
+        /// </summary>
+        public abstract string Command { get; }
 
+        ///// <summary>
+        ///// Ответ todo: вынести в отдельный класс
+        ///// </summary>
+        //[JsonIgnore]
+        //public string Answer { get; set; }
 
-        [JsonIgnore] public string Answer { get; set; }
+        ///// <summary>
+        ///// Ответ устройства todo: вынести в отдельный класс
+        ///// </summary>
+        //[JsonIgnore]
+        //public DeviceAnswer DeviceAnswer { get; set; }
 
-        [JsonIgnore] public DeviceAnswer DeviceAnswer { get; set; }
-
-     
+        /// <summary>
+        /// Идентификатор команды
+        /// </summary>
         public Guid IdCommand { get; set; } = Guid.NewGuid();
 
+        /// <summary>
+        /// Таймаут ожидания
+        /// </summary>
         public int Timeout { get; set; } = 60_000;
     }
 
-    public class KkmOpenDrawer : KkmServerCommand, IKkmSeverCommand
+    /// <summary>
+    /// Команда открытия денежного ящика
+    /// </summary>
+    public class KkmOpenDrawer : KkmServerCommand
     {
-        public string Command { get; } = @"OpenCashDrawer";
+        public override string Command { get; } = @"OpenCashDrawer";
     }
 
-    public class KkmGetInfo : KkmServerCommand, IKkmSeverCommand
+    public class KkmGetInfo : KkmServerCommand
     {
-        [JsonIgnore] public KkmInfo Data => JsonSerializer.Deserialize<KkmInfo>(Answer);
+     
 
-        public string Command { get; set; } = @"GetDataKKT";
+        public override string Command { get; } = @"GetDataKKT";
 
-        [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-        [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-        public class KkmInfo
-        {
-            public int CheckNumber { get; set; }
 
-            public int SessionNumber { get; set; }
-
-            public Information Info { get; set; }
-
-            public class Information
-            {
-                public int SessionState { get; set; }
-
-                public decimal BalanceCash { get; set; }
-
-                // ReSharper disable once InconsistentNaming
-                public string Firmware_Version { get; set; }
-
-                // ReSharper disable once InconsistentNaming
-                public DateTime FN_DateEnd { get; set; }
-            }
-        }
     }
 
-    private class GetResultCommand : KkmServerCommand, IKkmSeverCommand
+    private class GetResultCommand : KkmServerCommand
     {
-        public string Command { get; } = @"GetRezult";
+        public override string Command { get; } = @"GetRezult";
     }
 
-    [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-    public class KkmCashOut : KkmServerCommand, IKkmSeverCommand
+    public class KkmCashOut : KkmServerCommand
     {
         public string CashierName { get; set; }
 
@@ -192,11 +170,10 @@ public class KkmServerDriver
 
         public decimal Amount { get; set; }
 
-        public string Command { get; } = @"PaymentCash";
+        public override string Command { get; } = @"PaymentCash";
     }
 
-    [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-    public class KkmCashIn : KkmServerCommand, IKkmSeverCommand
+    public class KkmCashIn : KkmServerCommand
     {
         public string CashierName { get; set; }
 
@@ -206,11 +183,10 @@ public class KkmServerDriver
 
         public decimal Amount { get; set; }
 
-        public string Command { get; } = @"DepositingCash";
+        public override string Command { get; } = @"DepositingCash";
     }
 
-    [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-    public class KkmCloseShift : KkmServerCommand, IKkmSeverCommand
+    public class KkmCloseShift : KkmServerCommand
     {
         public string CashierName { get; set; }
 
@@ -218,11 +194,10 @@ public class KkmServerDriver
         // ReSharper disable once InconsistentNaming
         public string CashierVATIN { get; set; }
 
-        public string Command { get; } = @"CloseShift";
+        public override string Command { get; } = @"CloseShift";
     }
 
-    [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-    public class KkmOpenSession : KkmServerCommand, IKkmSeverCommand
+    public class KkmOpenSession : KkmServerCommand
     {
         public string CashierName { get; set; }
 
@@ -230,16 +205,15 @@ public class KkmServerDriver
         // ReSharper disable once InconsistentNaming
         public string CashierVATIN { get; set; }
 
-        public string Command { get; } = @"OpenShift";
+        public override string Command { get; } = @"OpenShift";
     }
 
-    public class KkmGetXReport : KkmServerCommand, IKkmSeverCommand
+    public class KkmGetXReport : KkmServerCommand
     {
-        public string Command { get; } = @"XReport";
+        public override string Command { get; } = @"XReport";
     }
 
-    [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-    public class KkmPrintCheck : KkmServerCommand, IKkmSeverCommand
+    public class KkmPrintCheck : KkmServerCommand
     {
         public bool IsFiscalCheck { get; set; }
 
@@ -275,7 +249,7 @@ public class KkmServerDriver
         // ReSharper disable once CollectionNeverQueried.Global
         public List<CheckString> CheckStrings { get; set; } = new List<CheckString>();
 
-        public string Command { get; } = @"RegisterCheck";
+        public override string Command { get; } = @"RegisterCheck";
 
         public class CheckString
         {
@@ -324,8 +298,6 @@ public class KkmServerDriver
                 public string BarCode { get; set; } = null;
                 public bool? ContainsSerialNumber { get; set; } = null;
                 public bool? AcceptOnBad { get; set; } = null;
-
-
             }
         }
 
@@ -344,80 +316,114 @@ public class KkmServerDriver
         }
     }
 
-    public class TerminalDoPayment : KkmServerCommand, IKkmSeverCommand
+    //public class TerminalDoPayment : KkmServerCommand
+    //{
+    //    //CardNumber
+
+    //    public decimal Amount { get; set; }
+
+    //    public string ReceiptNumber { get; set; }
+
+    //    [JsonIgnore] public Information Data => JsonSerializer.Deserialize<Information>(Answer);
+
+    //    public override string Command { get; } = @"PayByPaymentCard";
+
+    //    // ReSharper disable once ClassNeverInstantiated.Global
+    //    public class Information
+    //    {
+    //        public string Slip { get; set; }
+
+    //        // ReSharper disable once InconsistentNaming
+    //        public string RRNCode { get; set; }
+
+    //        public string AuthorizationCode { get; set; }
+    //    }
+    //}
+
+    //public class TerminalReturnPayment : KkmServerCommand
+    //{
+    //    //CardNumber
+
+    //    public decimal Amount { get; set; }
+
+    //    public string ReceiptNumber { get; set; }
+
+    //    [JsonIgnore] public Information Data => JsonSerializer.Deserialize<Information>(Answer);
+
+    //    public override string Command { get; } = @"ReturnPaymentByPaymentCard";
+
+    //    // ReSharper disable once ClassNeverInstantiated.Global
+    //    public class Information
+    //    {
+    //        public string Slip { get; set; }
+
+    //        // ReSharper disable once InconsistentNaming
+    //        public string RRNCode { get; set; }
+
+    //        public string AuthorizationCode { get; set; }
+    //    }
+    //}
+
+    //public class TerminalCloseSession : KkmServerCommand
+    //{
+    //    [JsonIgnore] public Information Data => JsonSerializer.Deserialize<Information>(Answer);
+
+    //    public override string Command { get; } = @"Settlement";
+
+    //    // ReSharper disable once ClassNeverInstantiated.Global
+    //    public class Information
+    //    {
+    //        public string Slip { get; set; }
+    //    }
+    //}
+
+    //public class TerminalGetReport : KkmServerCommand
+    //{
+    //    public bool Detailed { get; set; } = true;
+
+    //    [JsonIgnore] public Information Data => JsonSerializer.Deserialize<Information>(Answer);
+
+    //    public override string Command { get; } = @"TerminalReport";
+
+    //    // ReSharper disable once ClassNeverInstantiated.Global
+    //    public class Information
+    //    {
+    //        public string Slip { get; set; }
+    //    }
+    //}
+
+    public class KkmServerKktInfoAnswer
     {
-        //CardNumber
+       
+            public int CheckNumber { get; set; }
 
-        public decimal Amount { get; set; }
+            public int SessionNumber { get; set; }
 
-        public string ReceiptNumber { get; set; }
+            public Information Info { get; set; }
 
-        [JsonIgnore] public Information Data => JsonSerializer.Deserialize<Information>(Answer);
+            public class Information
+            {
+                public int SessionState { get; set; }
 
-        public string Command { get; } = @"PayByPaymentCard";
+                public decimal BalanceCash { get; set; }
 
-        // ReSharper disable once ClassNeverInstantiated.Global
-        public class Information
-        {
-            public string Slip { get; set; }
+                // ReSharper disable once InconsistentNaming
+                public string Firmware_Version { get; set; }
 
-            // ReSharper disable once InconsistentNaming
-            public string RRNCode { get; set; }
-
-            public string AuthorizationCode { get; set; }
-        }
+                // ReSharper disable once InconsistentNaming
+                public DateTime FN_DateEnd { get; set; }
+            }
+        
     }
 
-    public class TerminalReturnPayment : KkmServerCommand, IKkmSeverCommand
+    public class KkmServerAnswer
     {
-        //CardNumber
+        public JsonNode? Rezult { get; set; }
 
-        public decimal Amount { get; set; }
+        public int Status { get; set; }
+        public string Error { get; set; }
 
-        public string ReceiptNumber { get; set; }
-
-        [JsonIgnore] public Information Data => JsonSerializer.Deserialize<Information>(Answer);
-
-        public string Command { get; } = @"ReturnPaymentByPaymentCard";
-
-        // ReSharper disable once ClassNeverInstantiated.Global
-        public class Information
-        {
-            public string Slip { get; set; }
-
-            // ReSharper disable once InconsistentNaming
-            public string RRNCode { get; set; }
-
-            public string AuthorizationCode { get; set; }
-        }
-    }
-
-    public class TerminalCloseSession : KkmServerCommand, IKkmSeverCommand
-    {
-        [JsonIgnore] public Information Data => JsonSerializer.Deserialize<Information>(Answer);
-
-        public string Command { get; } = @"Settlement";
-
-        // ReSharper disable once ClassNeverInstantiated.Global
-        public class Information
-        {
-            public string Slip { get; set; }
-        }
-    }
-
-    public class TerminalGetReport : KkmServerCommand, IKkmSeverCommand
-    {
-        public bool Detailed { get; set; } = true;
-
-        [JsonIgnore] public Information Data => JsonSerializer.Deserialize<Information>(Answer);
-
-        public string Command { get; } = @"TerminalReport";
-
-        // ReSharper disable once ClassNeverInstantiated.Global
-        public class Information
-        {
-            public string Slip { get; set; }
-        }
+        public string IdCommand { get; set; }
     }
 
     public class DeviceAnswer
@@ -426,6 +432,6 @@ public class KkmServerDriver
 
         public string Error { get; set; }
 
-        public string IdCommand { get; set; } 
+        public string IdCommand { get; set; }
     }
 }
