@@ -1,16 +1,17 @@
 ﻿using System.Text.Json.Serialization;
+using devicesConnector.Drivers;
 using devicesConnector.FiscalRegistrar.Devices.Russia;
 
-namespace devicesConnector.Drivers;
+namespace devicesConnector.FiscalRegistrar.Devices;
 
 public class KkmHelper
 {
-    private DeviceConnection _connection;
+    
     private IFiscalRegistrarDevice _kkm;
 
     public KkmHelper(DeviceConnection connection, KkmTypes kkmType)
     {
-        _connection = connection;
+        
 
         switch (kkmType)
         {
@@ -41,7 +42,8 @@ public class KkmHelper
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum KkmTypes
     {
-        //Россия
+
+        #region Россия
 
         /// <summary>
         /// АТОЛ ДТО8
@@ -78,6 +80,8 @@ public class KkmHelper
         /// </summary>
         KkmServer
 
+        #endregion
+
 
 
         //Другие страны
@@ -86,8 +90,32 @@ public class KkmHelper
 
     public KkmStatus GetStatus()
     {
+
+        //todo: подключение к ккм
+
         return _kkm.GetStatus();
 
+    }
+
+    public void OpenSession(Cashier cashier)
+    {
+        //todo: connection
+
+        _kkm.OpenSession(cashier);
+    }
+
+    public void CashInOut( decimal sum, Cashier cashier)
+    {
+        switch (sum)
+        {
+            case > 0:
+                _kkm.CashIn(sum, cashier);
+                break;
+            case < 0:
+                sum = Math.Abs(sum); //передаем положительное значение для снятия
+                _kkm.CashOut(sum, cashier);
+                break;
+        }
     }
 
 

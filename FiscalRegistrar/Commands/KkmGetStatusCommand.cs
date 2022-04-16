@@ -3,7 +3,7 @@
 /// <summary>
 /// Команда получения статуса от ККМ
 /// </summary>
-public class GetKkmStatusCommand : KkmCommand
+public class KkmGetStatusCommand : KkmCommand
 {
     //не содержит данных
 }

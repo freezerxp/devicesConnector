@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using devicesConnector;
+using devicesConnector.FiscalRegistrar;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,9 +11,8 @@ app.MapGet("/", () => "Hello World!");
 
 
 
+new KkmMapCreator().CrateMap(app);
 
-var p = new UrlMapCreator(app);
-p.CrateMaps();
 
 
 app.Run();

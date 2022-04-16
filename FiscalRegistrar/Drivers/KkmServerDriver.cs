@@ -38,9 +38,12 @@ public class KkmServerDriver
             r = GetResult(command.IdCommand);
         }
 
-        if (r.Status != 0)
+
+        var rezult = r.Rezult.Deserialize<KkmServerAnswer>();
+
+        if (rezult.Status != 0)
         {
-            throw new Exception(r.Error);
+            throw new Exception(rezult.Error);
         }
 
         return r;
@@ -478,7 +481,7 @@ public class KkmServerDriver
     /// <summary>
     /// Ответ на запрос состояния ККМ
     /// </summary>
-    public class KkmServerKktInfoAnswer
+    public class KkmServerKktInfoAnswer : KkmServerAnswer
     {
         /// <summary>
         /// Номер чека

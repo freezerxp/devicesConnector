@@ -1,4 +1,6 @@
-﻿namespace devicesConnector;
+﻿using System.Text.Json.Serialization;
+
+namespace devicesConnector;
 
 public class RuKkmInfo
 {
@@ -20,6 +22,7 @@ public class RuFfdInfo
 /// <summary>
 /// Признак способа расчета (1214)
 /// </summary>
+
 public enum FfdCalculationMethods
 {
     None,
@@ -63,6 +66,7 @@ public enum FfdCalculationMethods
 /// <summary>
 /// Признак предмета расчета (1212)
 /// </summary>
+
 public enum FfdCalculationSubjects
 {
     /// <summary>

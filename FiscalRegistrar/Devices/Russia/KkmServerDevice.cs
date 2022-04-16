@@ -50,4 +50,44 @@ public class KkmServerDevice : IFiscalRegistrarDevice
 
         return status;
     }
+
+    public void OpenSession(Cashier cashier)
+    {
+        var c = new KkmServerDriver.KkmOpenSession();
+        _driver.SendCommand(c);
+
+    }
+
+    public void GetReport(Cashier cashier)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void PrintFiscalReceipt()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void PrintNonFiscalReceipt()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void CashIn(decimal sum, Cashier cashier)
+    {
+        var c = new KkmServerDriver.KkmCashIn
+        {
+            CashierName = cashier.Name,
+            CashierVATIN = cashier.TaxId,
+            Amount = sum
+        };
+
+        _driver.SendCommand(c);
+
+    }
+
+    public void CashOut(decimal sum, Cashier cashier)
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -1,4 +1,6 @@
-﻿namespace devicesConnector
+﻿using System.Text.Json.Serialization;
+
+namespace devicesConnector
 {
     /// <summary>
     /// Статус ККМ
@@ -91,6 +93,7 @@
         /// <summary>
         /// Состояние смены
         /// </summary>
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public enum SessionStatuses
         {
             /// <summary>
@@ -117,6 +120,7 @@
         /// <summary>
         /// Состояние чека
         /// </summary>
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public enum CheckStatuses
         {
             /// <summary>
@@ -138,6 +142,7 @@
         /// <summary>
         /// Состояния ККМ
         /// </summary>
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public enum KkmStatuses
         {
             /// <summary>
