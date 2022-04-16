@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32407.343
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "devicesConnector", "devicesConnector.csproj", "{261B6845-A764-430C-9462-57015A0ABF9F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{261B6845-A764-430C-9462-57015A0ABF9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{261B6845-A764-430C-9462-57015A0ABF9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{261B6845-A764-430C-9462-57015A0ABF9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{261B6845-A764-430C-9462-57015A0ABF9F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {296DBF5D-A128-4E36-A7F7-B2B20065C1E4}
+	EndGlobalSection
+EndGlobal
