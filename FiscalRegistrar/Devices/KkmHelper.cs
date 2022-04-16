@@ -1,5 +1,5 @@
 ﻿using System.Text.Json.Serialization;
-using devicesConnector.FiscalRegistrar.Drivers.Russia;
+using devicesConnector.FiscalRegistrar.Devices.Russia;
 
 namespace devicesConnector.Drivers;
 

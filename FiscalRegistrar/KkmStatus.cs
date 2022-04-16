@@ -41,7 +41,10 @@
         /// </summary>
         public DateTime? SessionStarted { get; set; }
 
-        public RuKkm? RuKkmInfo { get; set; }
+        /// <summary>
+        /// Сумма наличности в ККМ
+        /// </summary>
+        public decimal CashSum { get; set; }
 
         /// <summary>
         /// Заводской номер
@@ -62,6 +65,10 @@
         /// Дата окончания НФ
         /// </summary>
         public DateTime FnDateEnd { get; set; }
+
+
+        public RuKkm? RuKkmInfo { get; set; }
+
     
 
         /// <summary>

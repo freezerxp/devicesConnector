@@ -1,16 +1,16 @@
 ﻿using System.Text.Json;
 using devicesConnector.Drivers;
-using devicesConnector.Wrappers;
+using devicesConnector.FiscalRegistrar.Drivers;
 
-namespace devicesConnector.FiscalRegistrar.Drivers.Russia;
+namespace devicesConnector.FiscalRegistrar.Devices.Russia;
 
 public class KkmServerDevice : IFiscalRegistrarDevice
 {
-    private KkmServerDriver driver;
+    private KkmServerDriver _driver;
 
     public KkmServerDevice(DeviceConnection.LanConnection lanConnection)
     {
-        driver = new KkmServerDriver(lanConnection);
+        _driver = new KkmServerDriver(lanConnection);
     }
 
     public void PrintNonFiscalString(string str)
@@ -22,7 +22,7 @@ public class KkmServerDevice : IFiscalRegistrarDevice
     {
         var c = new KkmServerDriver.KkmGetInfo();
 
-     var r=  driver.SendCommand(c);
+     var r=  _driver.SendCommand(c);
 
      var answer =r.Rezult.Deserialize< KkmServerDriver.KkmServerKktInfoAnswer> ();
 
@@ -39,7 +39,9 @@ public class KkmServerDevice : IFiscalRegistrarDevice
             CheckNumber = answer.CheckNumber,
             SessionNumber = answer.SessionNumber,
             SoftwareVersion = answer.Info.Firmware_Version,
-            FnDateEnd = answer.Info.FN_DateEnd
+            FnDateEnd = answer.Info.FN_DateEnd,
+            CashSum = answer.Info.BalanceCash
+            
         };
 
 
