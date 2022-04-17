@@ -140,6 +140,37 @@ public class Enums
         Russia
     }
 
+    /// <summary>
+    /// Версии ФФД
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum FFdVersions
+    {
+        /// <summary>
+        /// Оффлайн-касса
+        /// </summary>
+        Offline,
+        /// <summary>
+        /// 1.0
+        /// </summary>
+        Ffd100,
+
+        /// <summary>
+        /// 1.05
+        /// </summary>
+        Ffd105,
+
+        /// <summary>
+        /// 1.1
+        /// </summary>
+        Ffd110,
+
+        /// <summary>
+        /// 1.2
+        /// </summary>
+        Ffd120
+    }
+
 
     /// <summary>
     /// Признак способа расчета (1214)

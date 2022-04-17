@@ -56,7 +56,7 @@ public class RuReceiptData : ICountrySpecificReceiptData
     /// <summary>
     /// Адрес для отправки электронного чека
     /// </summary>
-    public string DigitalReceiptAddress { get; set; }
+    public string? DigitalReceiptAddress { get; set; }
 
     /// <summary>
     /// Индекс СНО

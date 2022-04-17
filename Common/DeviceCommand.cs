@@ -21,9 +21,10 @@ public abstract  class DeviceCommand
 /// </summary>
 public class Answer
 {
-    public Answer(Statuses status)
+    public Answer(Statuses status, object? data)
     {
         Status = status;
+        Data = data;
     }
 
 
@@ -33,13 +34,9 @@ public class Answer
     public Statuses Status { get; set; }
 
     /// <summary>
-    /// Сообщение
-    /// </summary>
-    public string? Message { get; set; }
-
-    /// <summary>
     /// Результат выполнения команды
     /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public object? Data { get; set; }
 
 
@@ -53,10 +50,6 @@ public class Answer
         /// Операция успешно выполнена
         /// </summary>
         Ok,
-        /// <summary>
-        /// Операция выполнена, но с предупреждением
-        /// </summary>
-        Warning,
 
         /// <summary>
         /// Ошибка при выполнении операции

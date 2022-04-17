@@ -1,12 +1,18 @@
 ﻿using devicesConnector.Common;
-using devicesConnector.FiscalRegistrar.Devices;
+using devicesConnector.FiscalRegistrar.Objects;
 
-namespace devicesConnector.Drivers;
+namespace devicesConnector.FiscalRegistrar.Devices;
 
+/// <summary>
+/// Интерфейс фискальных регистраторов
+/// </summary>
 public interface IFiscalRegistrarDevice: IDevice
 {
-    public void PrintNonFiscalString(string str);
 
+    /// <summary>
+    /// Получить статус ККМ
+    /// </summary>
+    /// <returns></returns>
     public KkmStatus GetStatus();
 
     /// <summary>
@@ -19,15 +25,35 @@ public interface IFiscalRegistrarDevice: IDevice
     /// </summary>
     public void GetReport(Enums.ReportTypes type, Cashier cashier);
 
+ 
     /// <summary>
-    /// Напечатать фискальный чек
+    /// Открыть чек
     /// </summary>
-    public void PrintFiscalReceipt();
+    /// <param name="receipt">Данные чека</param>
+    public void OpenReceipt(ReceiptData? receipt);
 
     /// <summary>
-    /// Напечатать НЕфискальный чек
+    /// Закрытие чека
     /// </summary>
-    public void PrintNonFiscalReceipt();
+    public void CloseReceipt ();
+
+    /// <summary>
+    /// Регистрация позиции в чеке
+    /// </summary>
+    /// <param name="item">Позиция чека</param>
+    public void RegisterItem(ReceiptItem item);
+
+    /// <summary>
+    /// Регистрация платежа 
+    /// </summary>
+    /// <param name="payment">Платеж</param>
+    public void RegisterPayment(ReceiptPayment payment);
+
+    /// <summary>
+    /// Печать нефискального текста
+    /// </summary>
+    /// <param name="text">Строка текста для печати</param>
+    public void PrintText( string text);
 
     /// <summary>
     /// Внести наличные

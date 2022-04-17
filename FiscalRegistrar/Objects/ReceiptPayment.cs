@@ -13,5 +13,5 @@ public class ReceiptPayment
     /// <summary>
     /// Индекс способа оплаты в ККМ
     /// </summary>
-    public int Index { get; set; }
+    public int MethodIndex { get; set; }
 }

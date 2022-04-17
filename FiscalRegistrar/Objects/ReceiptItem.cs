@@ -1,4 +1,5 @@
-﻿using devicesConnector.FiscalRegistrar.Objects;
+﻿using System.Text.Json.Nodes;
+using devicesConnector.FiscalRegistrar.Objects;
 
 namespace devicesConnector;
 
@@ -31,10 +32,20 @@ public class ReceiptItem
     /// <summary>
     /// Данные, специфичные для региона
     /// </summary>
-    public ICountrySpecificReceiptItemData? CountrySpecificData { get; set; }
+    public JsonNode? CountrySpecificData { get; set; }
 
     /// <summary>
     /// Комментарий
     /// </summary>
     public string? Comment { get; set; }
+
+    /// <summary>
+    /// Индекс налоговой ставки (НДС)
+    /// </summary>
+    public int? TaxRateIndex { get; set; }
+
+    /// <summary>
+    /// Номер секции (отдела)
+    /// </summary>
+    public int DepartmentIndex { get; set; } = 1;
 }

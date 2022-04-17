@@ -8,9 +8,5 @@ public class KkmOpenSessionCommand : KkmCommand
     /// <summary>
     /// Кассир, открывающий смену
     /// </summary>
-    public Cashier Cashier { get; set; } = new Cashier
-    {
-        Name = "Кассир",
-        TaxId = new string('0',12)
-    };
+    public Cashier Cashier { get; set; } 
 }

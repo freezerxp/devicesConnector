@@ -250,7 +250,6 @@ public class KkmServerDriver
         /// <summary>
         /// Не печатать?
         /// </summary>
-        // ReSharper disable once UnusedMember.Global
         public bool NotPrint { get; set; }
 
         /// <summary>

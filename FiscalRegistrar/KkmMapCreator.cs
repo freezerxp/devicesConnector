@@ -21,10 +21,7 @@ public  class KkmMapCreator: IMapCreator
             var a = kkmH.GetStatus();
 
 
-            return Results.Ok(new Answer(Answer.Statuses.Ok)
-            {
-                Data = a
-            });
+            return Results.Ok(new Answer(Answer.Statuses.Ok, a));
         });
 
         app.MapPost("/kkm/openSession", async (HttpContext context) =>
@@ -37,7 +34,7 @@ public  class KkmMapCreator: IMapCreator
             kkmH.OpenSession(c.Cashier);
 
 
-            return Results.Ok(new Answer(Answer.Statuses.Ok));
+            return Results.Ok();
         });
 
         app.MapPost("/kkm/cashInOut", async (HttpContext context) =>
@@ -49,7 +46,7 @@ public  class KkmMapCreator: IMapCreator
             kkmH.CashInOut(c.Sum, c.Cashier);
 
 
-            return Results.Ok(new Answer(Answer.Statuses.Ok));
+            return Results.Ok();
         });
 
         app.MapPost("/kkm/getReport", async (HttpContext context) =>
@@ -61,8 +58,21 @@ public  class KkmMapCreator: IMapCreator
             kkmH.GetReport(c.ReportType, c.Cashier);
 
 
-            return Results.Ok(new Answer(Answer.Statuses.Ok));
+            return Results.Ok();
         });
+
+        app.MapPost("/kkm/printFiscalReceipt", async (HttpContext context) =>
+        {
+            var c = await GetCommand<KkmPrintFiscalReceiptCommand>(context);
+
+            var kkmH = new FiscalRegistrarFacade(c.Connection, c.KkmType);
+
+            kkmH.PrintFiscalReceipt(c.ReceiptData);
+
+
+            return Results.Ok();
+        });
+
     }
 
     private static async Task<TCommand> GetCommand<TCommand>(HttpContext context) where TCommand : KkmCommand

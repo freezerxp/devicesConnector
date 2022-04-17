@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-using devicesConnector.Common;
-using devicesConnector.Drivers;
+﻿using devicesConnector.Common;
 using devicesConnector.FiscalRegistrar.Devices.Russia;
 
 namespace devicesConnector.FiscalRegistrar.Devices;
@@ -78,9 +76,33 @@ public class FiscalRegistrarFacade
         _kkm.GetReport (type, cashier);
     }
 
-
-public void PrintNonFiscalReceipt(List<string> data)
+    public void PrintFiscalReceipt(ReceiptData receipt)
     {
+        //todo: проверка ККМ на готовность
 
+        //открываем чек
+        _kkm.OpenReceipt(receipt);
+
+        //регистрация товаров
+        foreach (var item in receipt.Items)
+        {
+            _kkm.RegisterItem(item);
+        }
+
+        //todo: регистрация скидок на чек
+
+        //регистрация платежей
+
+        foreach (var payment in receipt.Payments)
+        {
+            _kkm.RegisterPayment(payment);
+        }
+
+        //закрытие чека
+
+        _kkm.CloseReceipt();
+
+        //todo: отрезка чека
     }
+
 }

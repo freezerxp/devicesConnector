@@ -1,4 +1,5 @@
-﻿using devicesConnector.FiscalRegistrar.Objects;
+﻿using System.Text.Json.Nodes;
+using devicesConnector.FiscalRegistrar.Objects;
 
 namespace devicesConnector;
 
@@ -28,7 +29,7 @@ public class ReceiptData
     /// <summary>
     /// Покупатель
     /// </summary>
-    public Contractor Contractor { get; set; }
+    public Contractor? Contractor { get; set; }
 
 
     /// <summary>
@@ -41,7 +42,7 @@ public class ReceiptData
     /// </summary>
     public List<ReceiptPayment> Payments { get; set; }
 
-    public ICountrySpecificReceiptData CountrySpecificData { get; set; }
+    public JsonNode CountrySpecificData { get; set; }
 
 }
 
