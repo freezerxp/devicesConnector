@@ -58,9 +58,28 @@ public class KkmServerDevice : IFiscalRegistrarDevice
 
     }
 
-    public void GetReport(Cashier cashier)
+    public void GetReport(KkmHelper.ReportTypes type, Cashier cashier)
     {
-        throw new NotImplementedException();
+        switch (type)
+        {
+            case KkmHelper.ReportTypes.ZReport:
+                _driver.SendCommand(new KkmServerDriver.KkmCloseShift
+                {
+                    CashierName = cashier.Name,
+                    CashierVATIN = cashier.TaxId
+                });
+                break;
+            case KkmHelper.ReportTypes.XReport:
+                _driver.SendCommand(new KkmServerDriver.KkmGetXReport());
+                break;
+            case KkmHelper.ReportTypes.XReportWithGoods:
+                throw new NotSupportedException();
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(type), type, null);
+        }
+
+      
     }
 
     public void PrintFiscalReceipt()

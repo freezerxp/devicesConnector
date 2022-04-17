@@ -6,12 +6,12 @@ namespace devicesConnector.FiscalRegistrar.Devices;
 
 public class KkmHelper
 {
-    
+
     private IFiscalRegistrarDevice _kkm;
 
     public KkmHelper(DeviceConnection connection, KkmTypes kkmType)
     {
-        
+
 
         switch (kkmType)
         {
@@ -87,6 +87,28 @@ public class KkmHelper
         //Другие страны
     }
 
+    /// <summary>
+    /// Тип суточного отчета
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum ReportTypes
+    {
+        /// <summary>
+        /// Z-отчет (закрытие смены)
+        /// </summary>
+        ZReport,
+
+        /// <summary>
+        /// х-отчет
+        /// </summary>
+        XReport,
+
+        /// <summary>
+        /// х-отчет с товарами
+        /// </summary>
+        XReportWithGoods
+    }
+
 
     public KkmStatus GetStatus()
     {
@@ -104,7 +126,7 @@ public class KkmHelper
         _kkm.OpenSession(cashier);
     }
 
-    public void CashInOut( decimal sum, Cashier cashier)
+    public void CashInOut(decimal sum, Cashier cashier)
     {
         switch (sum)
         {
@@ -118,8 +140,14 @@ public class KkmHelper
         }
     }
 
+    public void GetReport(ReportTypes type, Cashier cashier)
+    {
+        //todo: connection
+        _kkm.GetReport (type, cashier);
+    }
 
-    public void PrintNonFiscalReceipt(List<string> data)
+
+public void PrintNonFiscalReceipt(List<string> data)
     {
 
     }

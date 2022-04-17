@@ -1,20 +1,20 @@
 {
   //kkm/openSession/getStatus
- "GetStatus": {
-  "Connection": {
-    "ConnectionType": "Lan",
-    "Lan": {
-      "HostUrl": "localhost",
-      "PortNumber": 5893,
-      "UserLogin": "User",
-      "UserPassword": ""
-    }
+  "GetStatus": {
+    "Connection": {
+      "ConnectionType": "Lan",
+      "Lan": {
+        "HostUrl": "localhost",
+        "PortNumber": 5893,
+        "UserLogin": "User",
+        "UserPassword": ""
+      }
+    },
+    "KkmType": "KkmServer"
   },
-  "KkmType": "KkmServer"
-},
 
   //kkm/openSession
- "OpenSession": {
+  "OpenSession": {
     "Connection": {
       "ConnectionType": "Lan",
       "Lan": {
@@ -31,9 +31,9 @@
     "KkmType": "KkmServer"
   },
 
-  
+
   //kkm/cashInOut
-  "CashInOut":{
+  "CashInOut": {
     "Connection": {
       "ConnectionType": "Lan",
       "Lan": {
@@ -48,6 +48,26 @@
       "TaxId": "123456879012"
     },
     "Sum": 12345.56,
+    "KkmType": "KkmServer"
+  },
+
+
+  //kkm/getReport
+  "GetReport": {
+    "Connection": {
+      "ConnectionType": "Lan",
+      "Lan": {
+        "HostUrl": "localhost",
+        "PortNumber": 5893,
+        "UserLogin": "User",
+        "UserPassword": ""
+      }
+    },
+    "Cashier": {
+      "Name": "Ivanov",
+      "TaxId": "123456879012"
+    },
+    "Type": "ZReport",
     "KkmType": "KkmServer"
   }
 }

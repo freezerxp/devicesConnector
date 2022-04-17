@@ -56,5 +56,20 @@ public  class KkmMapCreator: IMapCreator
 
             return Results.Ok(new Answer(Answer.Statuses.Ok));
         });
+
+        app.MapPost("/kkm/getReport", async (HttpContext context) =>
+        {
+            using var reader = new StreamReader(context.Request.Body, Encoding.UTF8);
+            var json = await reader.ReadToEndAsync();
+
+            var c = JsonSerializer.Deserialize<KkmGetReportCommand>(json);
+
+            var kkmH = new KkmHelper(c.Connection, c.KkmType);
+
+            kkmH.GetReport(c.Type, c.Cashier);
+
+
+            return Results.Ok(new Answer(Answer.Statuses.Ok));
+        });
     }
 }
