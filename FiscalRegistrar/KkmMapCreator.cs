@@ -6,9 +6,8 @@ using devicesConnector.FiscalRegistrar.Devices;
 
 namespace devicesConnector.FiscalRegistrar;
 
-public  class KkmMapCreator: IMapCreator
+public class KkmMapCreator : IMapCreator
 {
-
     public void CrateMap(WebApplication app)
     {
         app.MapPost("/kkm/getStatus", async (HttpContext context) =>
@@ -17,24 +16,17 @@ public  class KkmMapCreator: IMapCreator
 
             var kkmH = new FiscalRegistrarFacade(c.Connection, c.KkmType);
 
-            
-            var a = kkmH.GetStatus();
+            return GetResult(() => kkmH.GetStatus());
 
-
-            return Results.Ok(new Answer(Answer.Statuses.Ok, a));
         });
 
         app.MapPost("/kkm/openSession", async (HttpContext context) =>
         {
-
             var c = await GetCommand<KkmOpenSessionCommand>(context);
 
             var kkmH = new FiscalRegistrarFacade(c.Connection, c.KkmType);
 
-            kkmH.OpenSession(c.Cashier);
-
-
-            return Results.Ok();
+            return GetResult(() => kkmH.OpenSession(c.Cashier));
         });
 
         app.MapPost("/kkm/cashInOut", async (HttpContext context) =>
@@ -43,10 +35,7 @@ public  class KkmMapCreator: IMapCreator
 
             var kkmH = new FiscalRegistrarFacade(c.Connection, c.KkmType);
 
-            kkmH.CashInOut(c.Sum, c.Cashier);
-
-
-            return Results.Ok();
+            return GetResult(() => kkmH.CashInOut(c.Sum, c.Cashier));
         });
 
         app.MapPost("/kkm/getReport", async (HttpContext context) =>
@@ -55,10 +44,8 @@ public  class KkmMapCreator: IMapCreator
 
             var kkmH = new FiscalRegistrarFacade(c.Connection, c.KkmType);
 
-            kkmH.GetReport(c.ReportType, c.Cashier);
 
-
-            return Results.Ok();
+            return GetResult(() => kkmH.GetReport(c.ReportType, c.Cashier));
         });
 
         app.MapPost("/kkm/printFiscalReceipt", async (HttpContext context) =>
@@ -67,12 +54,42 @@ public  class KkmMapCreator: IMapCreator
 
             var kkmH = new FiscalRegistrarFacade(c.Connection, c.KkmType);
 
-            kkmH.PrintFiscalReceipt(c.ReceiptData);
-
-
-            return Results.Ok();
+            return GetResult(() => kkmH.PrintFiscalReceipt(c.ReceiptData));
         });
+    }
 
+    private static IResult GetResult<T>(Func<T> func)
+    {
+        T result;
+
+        try
+        {
+             result = func.Invoke();
+
+
+        }
+        catch (Exception e)
+        {
+            return Results.Json(new Answer(Answer.Statuses.Error, e));
+        }
+
+
+        return Results.Ok(new Answer(Answer.Statuses.Ok, result));
+
+    }
+
+    private static IResult GetResult(Action action)
+    {
+        try
+        {
+            action();
+        }
+        catch (Exception e)
+        {
+            return Results.Json(new Answer(Answer.Statuses.Error, e));
+        }
+
+        return Results.Ok(new Answer(Answer.Statuses.Ok, null));
     }
 
     private static async Task<TCommand> GetCommand<TCommand>(HttpContext context) where TCommand : KkmCommand
@@ -83,7 +100,5 @@ public  class KkmMapCreator: IMapCreator
         var command = JsonSerializer.Deserialize<TCommand>(json);
 
         return command;
-
-    
     }
 }

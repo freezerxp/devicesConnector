@@ -2,6 +2,8 @@
 using devicesConnector.Common;
 using devicesConnector.FiscalRegistrar.Drivers;
 using devicesConnector.FiscalRegistrar.Objects;
+using devicesConnector.FiscalRegistrar.Objects.CountrySpecificData;
+using devicesConnector.FiscalRegistrar.Objects.CountrySpecificData.Russia;
 
 namespace devicesConnector.FiscalRegistrar.Devices.Russia;
 
@@ -30,12 +32,12 @@ public class KkmServerDevice : IFiscalRegistrarDevice
         {
             SessionStatus = answer.Info.SessionState switch
             {
-                1 => KkmStatus.SessionStatuses.Close,
-                2 => KkmStatus.SessionStatuses.Open,
-                3 => KkmStatus.SessionStatuses.OpenMore24Hours,
-                _ => KkmStatus.SessionStatuses.Unknown
+                1 => Enums.SessionStatuses.Close,
+                2 => Enums.SessionStatuses.Open,
+                3 => Enums.SessionStatuses.OpenMore24Hours,
+                _ => Enums.SessionStatuses.Unknown
             },
-            CheckStatus = KkmStatus.CheckStatuses.Close,
+            CheckStatus = Enums.CheckStatuses.Close,
             CheckNumber = answer.CheckNumber,
             SessionNumber = answer.SessionNumber,
             SoftwareVersion = answer.Info.Firmware_Version,
@@ -127,7 +129,7 @@ public class KkmServerDevice : IFiscalRegistrarDevice
         //специфичные для РФ данные
         #region Специфичные для РФ данные
 
-        RuReceiptData? ruData = receipt.CountrySpecificData.Deserialize<RuReceiptData>();
+        Objects.CountrySpecificData.Russia.ReceiptData? ruData = receipt.CountrySpecificData.Deserialize<Objects.CountrySpecificData.Russia.ReceiptData>();
 
      
 
@@ -191,7 +193,7 @@ public class KkmServerDevice : IFiscalRegistrarDevice
        };
 
        //специфичные для РФ данные
-       var ruData = item.CountrySpecificData.Deserialize<RuReceiptItemData>();
+       var ruData = item.CountrySpecificData.Deserialize<ReceiptItemData>();
 
 
        if (ruData != null)

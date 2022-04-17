@@ -128,7 +128,97 @@ public class Enums
         ReturnBuy
     }
 
- 
+
+    /// <summary>
+    /// Состояние смены
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum SessionStatuses
+    {
+        /// <summary>
+        /// Неизвестно
+        /// </summary>
+        Unknown,
+
+        /// <summary>
+        /// Открыта
+        /// </summary>
+        Open,
+
+        /// <summary>
+        /// Открыта более 24 часов
+        /// </summary>
+        OpenMore24Hours,
+
+        /// <summary>
+        /// Закрыта
+        /// </summary>
+        Close
+    }
+
+    /// <summary>
+    /// Состояние чека
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum CheckStatuses
+    {
+        /// <summary>
+        /// Неизвестно
+        /// </summary>
+        Unknown,
+
+        /// <summary>
+        /// Открыт
+        /// </summary>
+        Open,
+
+        /// <summary>
+        /// Закрыт
+        /// </summary>
+        Close
+    }
+
+    /// <summary>
+    /// Состояния ККМ
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum KkmStatuses
+    {
+        /// <summary>
+        /// Неизвестно
+        /// </summary>
+        Unknown,
+
+        /// <summary>
+        /// Готова к работе
+        /// </summary>
+        Ready,
+
+        /// <summary>
+        /// Нет бумаги
+        /// </summary>
+        NoPaper,
+
+        /// <summary>
+        /// Слишком много документов, не отправленных в ОФД
+        /// </summary>
+        OfdDocumentsToMany,
+
+        /// <summary>
+        /// Открыта крышка
+        /// </summary>
+        CoverOpen,
+
+        /// <summary>
+        /// Ошибка оборудования
+        /// </summary>
+        HardwareError,
+        /// <summary>
+        /// Необходимо допечатать документ
+        /// </summary>
+        NeedToContinuePrint
+    }
+
 
     /// <summary>
     /// Версии ФФД
@@ -159,6 +249,102 @@ public class Enums
         /// 1.2
         /// </summary>
         Ffd120
+    }
+
+    /// <summary>
+    /// Номера атрибутов ОФД
+    /// </summary>
+    public enum OfdAttributes
+    {
+        /// <summary>
+        /// ИНН Кассира
+        /// </summary>
+        CashierInn = 1203,
+
+        /// <summary>
+        /// Адрес для отправки электронного чека
+        /// </summary>
+        ClientEmailPhone = 1008,
+
+        /// <summary>
+        /// Имя Кассира
+        /// </summary>
+        CashierName = 1021,
+
+        /// <summary>
+        /// СНО
+        /// </summary>
+        TaxSystem = 1055,
+
+        /// <summary>
+        /// ФИО Покупателя
+        /// </summary>
+        ClientName = 1227,
+
+        /// <summary>
+        /// ИНН Покупателя
+        /// </summary>
+        ClientInn = 1228,
+
+        /// <summary>
+        /// Единицы измерения
+        /// </summary>
+        UnitCode = 2108
+    }
+
+    /// <summary>
+    /// Перечень вариантов ошибок ККМ
+    /// </summary>
+    public enum ErrorTypes
+    {
+        /// <summary>
+        /// неизвестная ошибка
+        /// </summary>
+        Unknown,
+        /// <summary>
+        /// Необходимо обратиться в сервис
+        /// </summary>
+        NeedService,
+        /// <summary>
+        /// Нет бумаги
+        /// </summary>
+        NoPaper,
+        /// <summary>
+        /// Смена открыта более 24 часов
+        /// </summary>
+        SessionMore24Hour,
+        /// <summary>
+        /// Некорректный индекс способа оплаты
+        /// </summary>
+        UnCorrectPaymentIndex,
+        /// <summary>
+        /// Нет связи
+        /// </summary>
+        NoConnection,
+        /// <summary>
+        /// Некорректные даные
+        /// </summary>
+        NonCorrectData,
+        /// <summary>
+        /// Порт занят
+        /// </summary>
+        PortBusy,
+        /// <summary>
+        /// Крышка открыта
+        /// </summary>
+        CoverOpen,
+        /// <summary>
+        /// Слишком много не отправленных в ОФД документов
+        /// </summary>
+        TooManyOfflineDocuments,
+        /// <summary>
+        /// Некорректные дата/время в ККМ
+        /// </summary>
+        UnCorrectDateTime,
+        /// <summary>
+        /// Ошибка подключения,
+        /// </summary>
+        ConnectionError
     }
 
 

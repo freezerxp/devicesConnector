@@ -11,17 +11,17 @@ namespace devicesConnector
         /// <summary>
         /// Состояние чека
         /// </summary>
-        public CheckStatuses CheckStatus { get; set; } = CheckStatuses.Unknown;
+        public Enums.CheckStatuses CheckStatus { get; set; } = Enums.CheckStatuses.Unknown;
 
         /// <summary>
         /// Состояние смены
         /// </summary>
-        public SessionStatuses SessionStatus { get; set; } = SessionStatuses.Unknown;
+        public Enums.SessionStatuses SessionStatus { get; set; } = Enums.SessionStatuses.Unknown;
 
         /// <summary>
         /// Статус ККМ
         /// </summary>
-        public KkmStatuses KkmState { get; set; } = KkmStatuses.Unknown;
+        public Enums.KkmStatuses KkmState { get; set; } = Enums.KkmStatuses.Unknown;
 
         /// <summary>
         /// Версия драйвера
@@ -68,7 +68,9 @@ namespace devicesConnector
         /// </summary>
         public DateTime FnDateEnd { get; set; }
 
-
+        /// <summary>
+        /// Информация по РФ ККМ
+        /// </summary>
         public RuKkm? RuKkmInfo { get; set; }
 
     
@@ -87,97 +89,6 @@ namespace devicesConnector
             /// Кол-во не отправленных документов в ОФД
             /// </summary>
             public int OfdNotSendDocuments { get; set; }
-        }
-
-
-        /// <summary>
-        /// Состояние смены
-        /// </summary>
-        [JsonConverter(typeof(JsonStringEnumConverter))]
-        public enum SessionStatuses
-        {
-            /// <summary>
-            /// Неизвестно
-            /// </summary>
-            Unknown,
-
-            /// <summary>
-            /// Открыта
-            /// </summary>
-            Open,
-
-            /// <summary>
-            /// Открыта более 24 часов
-            /// </summary>
-            OpenMore24Hours,
-
-            /// <summary>
-            /// Закрыта
-            /// </summary>
-            Close
-        }
-
-        /// <summary>
-        /// Состояние чека
-        /// </summary>
-        [JsonConverter(typeof(JsonStringEnumConverter))]
-        public enum CheckStatuses
-        {
-            /// <summary>
-            /// Неизвестно
-            /// </summary>
-            Unknown,
-
-            /// <summary>
-            /// Открыт
-            /// </summary>
-            Open,
-
-            /// <summary>
-            /// Закрыт
-            /// </summary>
-            Close
-        }
-
-        /// <summary>
-        /// Состояния ККМ
-        /// </summary>
-        [JsonConverter(typeof(JsonStringEnumConverter))]
-        public enum KkmStatuses
-        {
-            /// <summary>
-            /// Неизвестно
-            /// </summary>
-            Unknown,
-
-            /// <summary>
-            /// Готова к работе
-            /// </summary>
-            Ready,
-
-            /// <summary>
-            /// Нет бумаги
-            /// </summary>
-            NoPaper,
-
-            /// <summary>
-            /// Слишком много документов, не отправленных в ОФД
-            /// </summary>
-            OfdDocumentsToMany,
-
-            /// <summary>
-            /// Открыта крышка
-            /// </summary>
-            CoverOpen,
-
-            /// <summary>
-            /// Ошибка оборудования
-            /// </summary>
-            HardwareError,
-            /// <summary>
-            /// Необходимо допечатать документ
-            /// </summary>
-            NeedToContinuePrint
         }
     }
 }

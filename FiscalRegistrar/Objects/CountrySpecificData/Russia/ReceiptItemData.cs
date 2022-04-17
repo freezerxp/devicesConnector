@@ -1,17 +1,9 @@
-﻿namespace devicesConnector.FiscalRegistrar.Objects;
-
-/// <summary>
-/// Интерфейс специфичных для региона данных
-/// </summary>
-public interface ICountrySpecificReceiptItemData
-{
-
-}
+﻿namespace devicesConnector.FiscalRegistrar.Objects.CountrySpecificData.Russia;
 
 /// <summary>
 /// Специфичные для РФ данные позиции чека
 /// </summary>
-public class RuReceiptItemData: ICountrySpecificReceiptItemData
+public class ReceiptItemData
 {
     /// <summary>
     /// Данные по ФФД
@@ -49,32 +41,4 @@ public class RuReceiptItemData: ICountrySpecificReceiptItemData
         /// </summary>
         public string RawCode { get; set; }
     }
-}
-
-
-
-
-/// <summary>
-/// Данные чека, специфичные для региона
-/// </summary>
-public interface ICountrySpecificReceiptData
-{
-
-}
-
-
-/// <summary>
-/// Специфические данные чека для РФ 
-/// </summary>
-public class RuReceiptData : ICountrySpecificReceiptData
-{
-    /// <summary>
-    /// Адрес для отправки электронного чека
-    /// </summary>
-    public string? DigitalReceiptAddress { get; set; }
-
-    /// <summary>
-    /// Индекс СНО
-    /// </summary>
-    public int TaxVariantIndex { get; set; }
 }

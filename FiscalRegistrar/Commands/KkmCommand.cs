@@ -1,4 +1,5 @@
-﻿using devicesConnector.Common;
+﻿using System.Text.Json.Nodes;
+using devicesConnector.Common;
 
 namespace devicesConnector.FiscalRegistrar.Commands;
 
@@ -11,6 +12,11 @@ public abstract class KkmCommand : DeviceCommand
     /// Тип ККМ
     /// </summary>
     public Enums.KkmTypes KkmType { get; set; }
+
+    /// <summary>
+    /// Специфичные для страны данные
+    /// </summary>
+    public JsonNode? CountrySpecificData { get; set; }
 
  
 }
