@@ -14,6 +14,18 @@
         "UserPassword": ""
       }
     }
-  }
+  },
+   {
+     "Id": "e4bfd416-8d2f-41ab-9475-2e99208bc330",
+     "Type": 1,
+     "Name": "АТОЛ ДТО 10",
+     "SubType": 102,
+     "Connection": {
+       "ConnectionType": 1,
+       "ComPort": {
+         "PortName": "COM4"
+       }
+     }
+   }
   ] 
 }
