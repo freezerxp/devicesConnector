@@ -56,6 +56,40 @@ public class Enums
     }
 
     /// <summary>
+    /// Типы команды для ККМ
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum CommandTypes
+    {
+        /// <summary>
+        /// Получить статус от ККМ
+        /// </summary>
+        GetStatus =1,
+
+        /// <summary>
+        /// Открыть смену
+        /// </summary>
+        OpenSession,
+
+        /// <summary>
+        /// Внесения/изъятие наличности
+        /// </summary>
+        CashInOut,
+
+        /// <summary>
+        /// Выполнить отчет (z, x)
+        /// </summary>
+        DoReport,
+
+        /// <summary>
+        /// Напечатать чек
+        /// </summary>
+        PrintFiscalReceipt
+
+
+    }
+
+    /// <summary>
     /// Тип суточного отчета
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]

@@ -1,12 +1,10 @@
-﻿using System.Text;
+﻿
+using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
+using System.Text.Json.Nodes;
 using devicesConnector.Common;
 using devicesConnector.Configs;
-using devicesConnector.FiscalRegistrar.Commands;
-using devicesConnector.FiscalRegistrar.Devices;
-using devicesConnector.FiscalRegistrar.Objects;
-using Microsoft.Extensions.Primitives;
+
 
 namespace devicesConnector.FiscalRegistrar;
 
@@ -14,66 +12,138 @@ public class KkmMapCreator : IMapCreator
 {
     public void CrateMap(WebApplication app)
     {
-        app.MapPost("/kkm/getStatus", async (HttpContext context) =>
+
+        app.MapPost("/addCommand", async (HttpContext context) =>
         {
-            var c = await GetCommand<KkmGetStatusCommand>(context);
+            //var c = await GetCommand(context);
 
-            var d = GetDeviceById(c.DeviceId);
+            var qr = new CommandsQueueRepository();
 
-            var kkmH = new FiscalRegistrarFacade(d);
+            using var reader = new StreamReader(context.Request.Body, Encoding.UTF8);
+            var json = await reader.ReadToEndAsync();
 
-            return GetResult(() => kkmH.GetStatus());
+            var jn = JsonNode.Parse(json);
+
+            qr.AddToQueue(jn);
+
+            var c = jn.Deserialize<DeviceCommand>();
+
+            return Results.Ok(new Answer(Answer.Statuses.Wait, null)
+                {
+                    CommandId = c.Id,
+                    DeviceId = c.DeviceId
+                }
+           );
 
         });
 
-        app.MapPost("/kkm/openSession", async (HttpContext context) =>
+        app.MapPost("/getCommand", async (HttpContext context) =>
         {
-            var c = await GetCommand<KkmOpenSessionCommand>(context);
 
-            var d = GetDeviceById(c.DeviceId);
+            var qr = new CommandsQueueRepository();
 
-            var kkmH = new FiscalRegistrarFacade(d);
+            using var reader = new StreamReader(context.Request.Body, Encoding.UTF8);
+            var json = await reader.ReadToEndAsync();
 
-            return GetResult(() => kkmH.OpenSession(c.Cashier));
+            var jn = JsonNode.Parse(json);
+
+
+            var c = jn.Deserialize<DeviceCommand>();
+
+
+            var ch = qr.GetCommandState(c.Id);
+
+            return Results.Ok(new Answer(ch.Status, ch.Result)
+                {
+                    CommandId = c.Id,
+                    DeviceId = c.DeviceId
+                }
+            );
+
         });
 
-        app.MapPost("/kkm/cashInOut", async (HttpContext context) =>
+
+
+
+        //app.MapPost("/kkm/getStatus", async (HttpContext context) =>
+        //{
+        //    var c = await GetCommand<KkmGetStatusCommand>(context);
+
+        //    var qr = new CommandsQueueRepository();
+
+        //    qr.AddToQueue(c);
+
+        //    return Results.Ok(new Answer(Answer.Statuses.Wait, null)
+        //    {
+        //        CommandId = c.Id,
+        //        DeviceId = c.DeviceId
+        //    });
+
+        //    //var d = GetDeviceById(c.DeviceId);
+
+        //    //var kkmH = new FiscalRegistrarFacade(d);
+
+        //    //return GetResult(() => kkmH.GetStatus());
+
+        //});
+
+        //app.MapPost("/kkm/openSession", async (HttpContext context) =>
+        //{
+        //    var c = await GetCommand<KkmOpenSessionCommand>(context);
+
+        //    var d = GetDeviceById(c.DeviceId);
+
+        //    var kkmH = new FiscalRegistrarFacade(d);
+
+        //    return GetResult(() => kkmH.OpenSession(c.Cashier));
+        //});
+
+        //app.MapPost("/kkm/cashInOut", async (HttpContext context) =>
+        //{
+        //    var c = await GetCommand<KkmCashInOutCommand>(context);
+
+        //    var d = GetDeviceById(c.DeviceId);
+
+
+        //    var kkmH = new FiscalRegistrarFacade(d);
+
+        //    return GetResult(() => kkmH.CashInOut(c.Sum, c.Cashier));
+        //});
+
+        //app.MapPost("/kkm/getReport", async (HttpContext context) =>
+        //{
+        //    var c = await GetCommand<KkmGetReportCommand>(context);
+
+        //    var d = GetDeviceById(c.DeviceId);
+
+        //    var kkmH = new FiscalRegistrarFacade(d);
+
+
+        //    return GetResult(() => kkmH.GetReport(c.ReportType, c.Cashier));
+        //});
+
+        //app.MapPost("/kkm/printFiscalReceipt", async (HttpContext context) =>
+        //{
+        //    var c = await GetCommand<KkmPrintFiscalReceiptCommand>(context);
+
+        //    var d = GetDeviceById(c.DeviceId);
+
+        //    var kkmH = new FiscalRegistrarFacade(d);
+
+        //    return GetResult(() => kkmH.PrintFiscalReceipt(c.ReceiptData));
+        //});
+    }
+
+    private IResult GetWaitResult(DeviceCommand command)
+    {
+        return Results.Ok(new Answer(Answer.Statuses.Wait, command)
         {
-            var c = await GetCommand<KkmCashInOutCommand>(context);
-
-            var d = GetDeviceById(c.DeviceId);
-
-
-            var kkmH = new FiscalRegistrarFacade(d);
-
-            return GetResult(() => kkmH.CashInOut(c.Sum, c.Cashier));
-        });
-
-        app.MapPost("/kkm/getReport", async (HttpContext context) =>
-        {
-            var c = await GetCommand<KkmGetReportCommand>(context);
-
-            var d = GetDeviceById(c.DeviceId);
-
-            var kkmH = new FiscalRegistrarFacade(d);
-
-
-            return GetResult(() => kkmH.GetReport(c.ReportType, c.Cashier));
-        });
-
-        app.MapPost("/kkm/printFiscalReceipt", async (HttpContext context) =>
-        {
-            var c = await GetCommand<KkmPrintFiscalReceiptCommand>(context);
-
-            var d = GetDeviceById(c.DeviceId);
-
-            var kkmH = new FiscalRegistrarFacade(d);
-
-            return GetResult(() => kkmH.PrintFiscalReceipt(c.ReceiptData));
+            CommandId = command.Id,
+            DeviceId = command.DeviceId
         });
     }
 
-    private Device GetDeviceById(int id)
+    private Device GetDeviceById(string id)
     {
         var cr = new ConfigRepository();
         var c = cr.Get();
@@ -123,12 +193,12 @@ public class KkmMapCreator : IMapCreator
 
 
 
-    private static async Task<TCommand> GetCommand<TCommand>(HttpContext context) where TCommand : KkmCommand
+    private static async Task<DeviceCommand> GetCommand(HttpContext context) 
     {
         using var reader = new StreamReader(context.Request.Body, Encoding.UTF8);
         var json = await reader.ReadToEndAsync();
 
-        var command = JsonSerializer.Deserialize<TCommand>(json);
+        var command = JsonSerializer.Deserialize<DeviceCommand>(json);
 
         return command;
     }

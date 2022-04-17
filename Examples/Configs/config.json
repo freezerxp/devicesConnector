@@ -1,20 +1,19 @@
 {
-  //подключенные устройства
-  "Devices": [
-    {
-      "Id": 1,
-      "Type": 1,
-      "Name": "Ккм сервер",
-      "SubType": 107,
-      "Connection": {
-        "ConnectionType": 0,
-        "Lan": {
-          "HostUrl": "localhost",
-          "PortNumber": 5893,
-          "UserLogin": "User",
-          "UserPassword": ""
-        }
+ "Devices": [
+  {
+    "Id": "f72b4df8-ae14-45ac-a024-70bc4c123339",
+    "Type": 1,
+    "Name": "РљРљРњ РЎРµСЂРІРµСЂ",
+    "SubType": 107,
+    "Connection": {
+      "ConnectionType": "Lan",
+      "Lan": {
+        "HostUrl": "localhost",
+        "PortNumber": 5893,
+        "UserLogin": "User",
+        "UserPassword": ""
       }
     }
+  }
   ] 
 }

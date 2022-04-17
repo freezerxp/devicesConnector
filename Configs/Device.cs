@@ -9,9 +9,9 @@ public class Device
 {
 
     /// <summary>
-    /// ИД устройства
+    /// Идентификатор устройства
     /// </summary>
-    public int Id { get; set; }
+    public string Id { get; set; }
     /// <summary>
     /// Имя устройства
     /// </summary>

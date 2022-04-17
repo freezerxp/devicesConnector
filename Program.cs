@@ -1,12 +1,13 @@
-using System.Text;
-using System.Text.Json;
-using devicesConnector;
+
+using devicesConnector.Common;
 using devicesConnector.Configs;
 using devicesConnector.FiscalRegistrar;
 
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
+
+
 
 app.MapGet("/", () =>
 {
@@ -21,6 +22,8 @@ app.MapGet("/", () =>
 
 new KkmMapCreator().CrateMap(app);
 
-
+CommandsQueueRepository.Init();
 
 app.Run();
+
+

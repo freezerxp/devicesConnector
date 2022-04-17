@@ -7,12 +7,22 @@ namespace devicesConnector.Common;
 /// <summary>
 /// Абстрактный класс команды устройству
 /// </summary>
-public abstract  class DeviceCommand 
+public   class DeviceCommand
 {
+    /// <summary>
+    /// Идентификатор команды
+    /// </summary>
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+
     /// <summary>
     /// Id устройства
     /// </summary>
-    public int DeviceId { get; set; }
+    public string DeviceId { get; set; }
+
+    /// <summary>
+    /// Тип выполняемой команды
+    /// </summary>
+    public int CommandType { get; set; }
 
 }
 
@@ -28,6 +38,17 @@ public class Answer
         Data = data;
     }
 
+    /// <summary>
+    /// Идентификатор команды
+    /// </summary>
+    public string CommandId { get; set; }
+
+    /// <summary>
+    /// Идентификатор устройства, на которое была отправлена команда
+    /// </summary>
+    public string DeviceId { get; set; }
+
+    
 
     /// <summary>
     /// Статус операции
@@ -53,10 +74,22 @@ public class Answer
         Ok,
 
         /// <summary>
-        /// Ошибка при выполнении операции
+        /// Завершена с ошибкой
         /// </summary>
-        Error
+        Error, 
+
+        /// <summary>
+        /// Ожидание очереди
+        /// </summary>
+        Wait, 
+
+        /// <summary>
+        /// Выполняется
+        /// </summary>
+        Run
     }
+
+  
 }
 
 /// <summary>

@@ -1,7 +1,5 @@
-
-//kkm/openSession/getStatus
 {
-  "DeviceId": 1,
-  "KkmType": "KkmServer"
+  "DeviceId": "f72b4df8-ae14-45ac-a024-70bc4c123339",
+  "CommandType": 1
 }
   
