@@ -46,7 +46,7 @@ public class Answer
     /// <summary>
     /// Идентификатор устройства, на которое была отправлена команда
     /// </summary>
-    public string DeviceId { get; set; }
+    public string? DeviceId { get; set; }
 
     
 

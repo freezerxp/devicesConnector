@@ -6,7 +6,7 @@ using Enums = devicesConnector.FiscalRegistrar.Objects.Enums;
 
 namespace devicesConnector.FiscalRegistrar.Commands;
 
-public class KkmCommandsManager: ICommandManager
+public class KkmCommandsManager : ICommandManager
 {
     /// <summary>
     /// Выполнение команды для ККМ
@@ -21,7 +21,9 @@ public class KkmCommandsManager: ICommandManager
             throw new NullReferenceException();
         }
 
-        var hi = CommandsHistory.First(x => x.Command.Deserialize<DeviceCommand>()?.CommandId == deviceCommand.CommandId);
+        var hi = CommandsHistory.First(
+            x => x.Command.Deserialize<DeviceCommand>()?.CommandId == deviceCommand.CommandId);
+
         hi.Status = Answer.Statuses.Run;
 
         var commandType = (Enums.CommandTypes) deviceCommand.CommandType;
@@ -32,51 +34,65 @@ public class KkmCommandsManager: ICommandManager
 
         switch (commandType)
         {
-            case Enums.CommandTypes.GetStatus:
-
-
+            case Enums.CommandTypes.GetStatus: 
                 GetStatus(kkm, hi);
-
-
                 break;
-            case Enums.CommandTypes.OpenSession:
+            case Enums.CommandTypes.OpenSession: 
+                OpenSession(kkm, hi);
                 break;
-            case Enums.CommandTypes.CashInOut:
+            case Enums.CommandTypes.CashInOut: 
+                CashInOut(kkm, hi);
                 break;
             case Enums.CommandTypes.DoReport:
-                DoReport( kkm, hi);
-
+                DoReport(kkm, hi);
                 break;
             case Enums.CommandTypes.PrintFiscalReceipt:
                 break;
-           
-              
         }
-
-
-
-      
-
-
-
-
-
-
     }
 
-    private static void DoReport( FiscalRegistrarFacade kkm, CommandQueue cq)
+    private static void CashInOut(FiscalRegistrarFacade kkm, CommandQueue cq)
     {
-        var drc = cq.Command.Deserialize<KkmGetReportCommand>();
+        var c = cq.Command.Deserialize<KkmCashInOutCommand>();
+        var a = () => kkm.CashInOut(c.Sum, c.Cashier);
 
-
-        var action = () => kkm.GetReport(drc.ReportType, drc.Cashier);
-
-        SetResult(action, cq);
+        SetResult(a, cq);
     }
 
+    /// <summary>
+    /// Открытие смены
+    /// </summary>
+    /// <param name="kkm">ККМ</param>
+    /// <param name="cq">Объект очереди</param>
+    private static void OpenSession(FiscalRegistrarFacade kkm, CommandQueue cq)
+    {
+        var c = cq.Command.Deserialize<KkmOpenSessionCommand>();
+        var a = () => kkm.OpenSession(c.Cashier);
+
+        SetResult(a, cq);
+    }
+
+    /// <summary>
+    /// Выполнение отчета на ККМ
+    /// </summary>
+    /// <param name="kkm">ККМ</param>
+    /// <param name="cq">Объект очереди</param>
+    private static void DoReport(FiscalRegistrarFacade kkm, CommandQueue cq)
+    {
+        var c = cq.Command.Deserialize<KkmGetReportCommand>();
+        var a = () => kkm.GetReport(c.ReportType, c.Cashier);
+
+        SetResult(a, cq);
+    }
+
+    /// <summary>
+    /// Запрос статуса ККМ
+    /// </summary>
+    /// <param name="kkm">ККМ</param>
+    /// <param name="cq">Объект очереди</param>
     private static void GetStatus(FiscalRegistrarFacade kkm, CommandQueue cq)
     {
-        var func = () => kkm.GetStatus();
-        SetResult(func, cq);
+        var f = kkm.GetStatus;
+        SetResult(f, cq);
     }
 }

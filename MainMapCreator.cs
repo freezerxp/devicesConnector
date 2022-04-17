@@ -59,21 +59,13 @@ public class MainMapCreator : IMapCreator
 
             var qr = new CommandsQueueRepository();
 
-            //using var reader = new StreamReader(context.Request.Body, Encoding.UTF8);
-            //var json = await reader.ReadToEndAsync();
-
-            //var jn = JsonNode.Parse(json);
-
-
-            //var c = jn.Deserialize<DeviceCommand>();
-
-
+         
             var ch = qr.GetCommandState(commandId);
 
             return Results.Ok(new Answer(ch.Status, ch.Result)
                 {
                     CommandId = commandId,
-                    //DeviceId = c.DeviceId
+                    DeviceId = ch.Command.Deserialize<DeviceCommand>()?.DeviceId
                 }
             );
 

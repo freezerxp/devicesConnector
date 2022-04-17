@@ -2,7 +2,6 @@
 using System.Text.Json.Nodes;
 using devicesConnector.Configs;
 using devicesConnector.FiscalRegistrar.Commands;
-using devicesConnector.FiscalRegistrar.Devices;
 
 namespace devicesConnector.Common;
 
@@ -14,7 +13,7 @@ public class CommandsQueueRepository
     /// <summary>
     /// Статичная очередь команд на выполнение
     /// </summary>
-    private static Queue<CommandQueue> _commandsQueue = new();
+    private static readonly Queue<CommandQueue> CommandsQueue = new();
 
     /// <summary>
     /// Все команды (для получения статусов по запросу)
@@ -61,8 +60,9 @@ public class CommandsQueueRepository
             Status = Answer.Statuses.Wait
         };
 
-        _commandsQueue.Enqueue(cq);
+        //добавляем в очередь и историю
         CommandsHistory.Add(cq);
+        CommandsQueue.Enqueue(cq);
     }
 
     /// <summary>
@@ -101,20 +101,28 @@ public class CommandsQueueRepository
     /// </summary>
     private static void DoCommand()
     {
-        if (_commandsQueue.Any() == false)
+        if (CommandsQueue.Any() == false)
         {
             return;
         }
 
-        var c = _commandsQueue.Dequeue();
+        var c = CommandsQueue.Dequeue();
 
         if (c.Status != Answer.Statuses.Wait)
         {
             return;
         }
 
-        var d = GetDeviceById(c.Command.Deserialize<DeviceCommand>().DeviceId);
+        var deviceCommand = c.Command.Deserialize<DeviceCommand>();
 
+        if(deviceCommand == null)
+        {
+            throw new NullReferenceException();
+        }
+
+        var d = GetDeviceById(deviceCommand.DeviceId);
+
+        //для ККМ
         if (d.Type == Enums.DeviceTypes.FiscalRegistrar)
         {
             var manager = new KkmCommandsManager();
@@ -122,7 +130,11 @@ public class CommandsQueueRepository
         }
     }
 
-
+    /// <summary>
+    /// Установка результата для команды
+    /// </summary>
+    /// <param name="action">Вызываемый метод</param>
+    /// <param name="cq">Объект очереди</param>
     public static void SetResult(Action action, CommandQueue cq)
     {
         try
@@ -137,6 +149,12 @@ public class CommandsQueueRepository
         }
     }
 
+    /// <summary>
+    /// Установка результата выполнения команды
+    /// </summary>
+    /// <typeparam name="T">Тип возвращаемого объекта вызовом команды</typeparam>
+    /// <param name="func">Вызываемый метод</param>
+    /// <param name="cq">Объект очереди</param>
     public static void SetResult<T>(Func<T> func, CommandQueue cq)
     {
         try
