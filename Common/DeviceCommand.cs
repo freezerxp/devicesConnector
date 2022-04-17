@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using devicesConnector.FiscalRegistrar.Objects;
 
 namespace devicesConnector.Common;
 
@@ -56,4 +57,54 @@ public class Answer
         /// </summary>
         Error
     }
+}
+
+/// <summary>
+/// Объект ошибки для ответа
+/// </summary>
+public class ErrorObject
+{
+
+
+    public ErrorObject(Exception e)
+    {
+        Message = e.Message;
+        StackTrace = e.StackTrace;
+
+        if (e is KkmException kkmE)
+        {
+            DeviceErrorCode = kkmE.KkmErrorCode;
+            DeviceErrorDescription = kkmE.KkmErrorDescription;
+            ErrorCode = (int)kkmE.Error;
+        }
+    }
+    /// <summary>
+    /// Сообщение
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Message { get; set; }
+
+    /// <summary>
+    /// Стэк
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? StackTrace { get; set; }
+
+    /// <summary>
+    /// Код ошибки (внутренний)
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? ErrorCode { get; set; }
+
+    /// <summary>
+    /// Код ошибки, возвращаемый устройством (драйвером)
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? DeviceErrorCode { get; set; }
+
+    /// <summary>
+    /// Сообщение об ошибке, возвращаемое устройством (драйвером)
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? DeviceErrorDescription { get; set; }
 }

@@ -208,7 +208,7 @@ public class AtolDto10:IFiscalRegistrarDevice
             _ => Enums.ErrorTypes.Unknown
         };
 
-        throw new KkmException(errType, resultCode, kkmResultDescription);
+        throw new KkmException(null, errType, resultCode, kkmResultDescription);
 
     }
 

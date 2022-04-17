@@ -2,6 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using devicesConnector.Common;
+using devicesConnector.FiscalRegistrar.Objects;
 
 namespace devicesConnector.FiscalRegistrar.Drivers;
 
@@ -45,12 +46,15 @@ public class KkmServerDriver
 
         if (r.Status != 0)
         {
-            throw new Exception(r.Error);
+            
+
+            throw new KkmException(null, Enums.ErrorTypes.Unknown,null,r.Error);
         }
 
         if (rezult.Status != 0)
         {
-            throw new Exception(rezult.Error);
+            throw new KkmException(null, Enums.ErrorTypes.Unknown, null, rezult.Error);
+            
         }
 
         return r;

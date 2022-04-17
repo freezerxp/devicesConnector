@@ -203,12 +203,17 @@ public class KkmServerDevice : IFiscalRegistrarDevice
            cs.Register.SignMethodCalculation = (int) ruData.FfdData.Method;
 
            //Маркировка
-           cs.Register.GoodCodeData = new KkmServerDriver.KkmPrintCheck.Register.GoodCode()
+
+           if (ruData.MarkingInfo != null)
            {
-               BarCode = ruData.MarkingInfo.RawCode,
-               AcceptOnBad = true,
-               ContainsSerialNumber = false
-           };
+                cs.Register.GoodCodeData = new KkmServerDriver.KkmPrintCheck.Register.GoodCode()
+               {
+                   BarCode = ruData.MarkingInfo.RawCode,
+                   AcceptOnBad = true,
+                   ContainsSerialNumber = false
+               };
+           }
+        
         }
 
        //добавляем в чек

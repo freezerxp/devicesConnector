@@ -1,8 +1,11 @@
 ﻿using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using devicesConnector.Common;
 using devicesConnector.FiscalRegistrar.Commands;
 using devicesConnector.FiscalRegistrar.Devices;
+using devicesConnector.FiscalRegistrar.Objects;
+using Microsoft.Extensions.Primitives;
 
 namespace devicesConnector.FiscalRegistrar;
 
@@ -70,7 +73,8 @@ public class KkmMapCreator : IMapCreator
         }
         catch (Exception e)
         {
-            return Results.Json(new Answer(Answer.Statuses.Error, e));
+            var eo = new ErrorObject(e);
+            return Results.Json(new Answer(Answer.Statuses.Error, eo));
         }
 
 
@@ -86,11 +90,15 @@ public class KkmMapCreator : IMapCreator
         }
         catch (Exception e)
         {
-            return Results.Json(new Answer(Answer.Statuses.Error, e));
+            var eo = new ErrorObject(e);
+
+            return Results.BadRequest(new Answer(Answer.Statuses.Error, eo));
         }
 
         return Results.Ok(new Answer(Answer.Statuses.Ok, null));
     }
+
+
 
     private static async Task<TCommand> GetCommand<TCommand>(HttpContext context) where TCommand : KkmCommand
     {
