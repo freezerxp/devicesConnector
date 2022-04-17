@@ -1,4 +1,5 @@
-﻿using devicesConnector.Common;
+﻿using System.Text.Json.Nodes;
+using devicesConnector.Common;
 
 namespace devicesConnector.Configs;
 
@@ -32,4 +33,10 @@ public class Device
     /// Параметры подключения
     /// </summary>
     public DeviceConnection Connection { get; set; }
+
+    /// <summary>
+    /// Специфичные для устройства параметры
+    /// Например, версия ФФД для РФ ККМ
+    /// </summary>
+    public JsonNode? DeviceSpecificConfig { get; set; }
 }

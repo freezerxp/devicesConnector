@@ -57,6 +57,19 @@ public interface IFiscalRegistrarDevice: IDevice
     public void PrintText( string text);
 
     /// <summary>
+    /// Подключение к ККМ
+    /// </summary>
+    public void Connect();
+
+    /// <summary>
+    /// Отключение от устройства
+    /// </summary>
+    public void Disconnect();
+
+
+    
+
+    /// <summary>
     /// Внести наличные
     /// </summary>
     public void CashIn(decimal sum, Cashier cashier);

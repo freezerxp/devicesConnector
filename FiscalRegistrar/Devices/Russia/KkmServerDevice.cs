@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using devicesConnector.Common;
+using devicesConnector.Configs;
 using devicesConnector.FiscalRegistrar.Drivers;
 using devicesConnector.FiscalRegistrar.Objects;
 using devicesConnector.FiscalRegistrar.Objects.CountrySpecificData;
@@ -14,9 +15,11 @@ public class KkmServerDevice : IFiscalRegistrarDevice
 
     private KkmServerDriver.KkmPrintCheck _kkmCheckCommand;
 
-    public KkmServerDevice(DeviceConnection.LanConnection lanConnection)
+    public KkmServerDevice(Device device)
     {
-        _driver = new KkmServerDriver(lanConnection);
+        var lan = device.Connection.Lan;
+
+        _driver = new KkmServerDriver(lan);
     }
 
 
@@ -248,7 +251,19 @@ public class KkmServerDevice : IFiscalRegistrarDevice
     {
     }
 
-  
+
+
+    public void Connect()
+    {
+        //можно проверять доступность ККМ-сервера
+    }
+
+    public void Disconnect()
+    {
+        //ничего не делаем
+    }
+
+
     public void CashIn(decimal sum, Cashier cashier)
     {
         var c = new KkmServerDriver.KkmCashIn

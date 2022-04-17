@@ -5,7 +5,7 @@ using Enums = devicesConnector.FiscalRegistrar.Objects.Enums;
 
 namespace devicesConnector.FiscalRegistrar.Devices;
 
-public class FiscalRegistrarFacade
+public class FiscalRegistrarFacade:IDisposable
 {
 
     private IFiscalRegistrarDevice _kkm;
@@ -19,6 +19,7 @@ public class FiscalRegistrarFacade
             case Enums.KkmTypes.Atol8:
                 break;
             case Enums.KkmTypes.Atol10:
+                _kkm = new AtolDto10(device);
                 break;
             case Enums.KkmTypes.AtolWebServer:
                 break;
@@ -29,11 +30,13 @@ public class FiscalRegistrarFacade
             case Enums.KkmTypes.Mercury:
                 break;
             case Enums.KkmTypes.KkmServer:
-                _kkm = new KkmServerDevice(device.Connection.Lan);
+                _kkm = new KkmServerDevice(device);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(device.SubType), device.SubType, null);
         }
+
+        _kkm.Connect();
 
     }
 
@@ -107,4 +110,8 @@ public class FiscalRegistrarFacade
         //todo: отрезка чека
     }
 
+    public void Dispose()
+    {
+        _kkm?.Disconnect();
+    }
 }

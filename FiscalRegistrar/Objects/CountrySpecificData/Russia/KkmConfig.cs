@@ -1,9 +1,9 @@
 ﻿namespace devicesConnector.FiscalRegistrar.Objects.CountrySpecificData.Russia;
 
 /// <summary>
-/// Специфичные для РФ данные команды к ККМ
+/// Специфичные для РФ настройки для ККМ
 /// </summary>
-public class CommandData
+public class KkmConfig
 {
     /// <summary>
     /// Версия ФФД

@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Nodes;
-using devicesConnector.Common;
+﻿using devicesConnector.Common;
 
 namespace devicesConnector.FiscalRegistrar.Commands;
 
@@ -9,10 +8,5 @@ namespace devicesConnector.FiscalRegistrar.Commands;
 public abstract class KkmCommand : DeviceCommand
 {
 
-    /// <summary>
-    /// Специфичные для страны данные
-    /// </summary>
-    public JsonNode? CountrySpecificData { get; set; }
-
- 
+    
 }
