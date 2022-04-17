@@ -10,9 +10,9 @@ namespace devicesConnector.Common;
 public abstract  class DeviceCommand 
 {
     /// <summary>
-    /// Параметры подключения к устройству
+    /// Id устройства
     /// </summary>
-    public DeviceConnection Connection { get; set; }
+    public int DeviceId { get; set; }
 
 }
 

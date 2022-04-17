@@ -1,4 +1,5 @@
 ﻿using devicesConnector.FiscalRegistrar.Devices;
+using devicesConnector.FiscalRegistrar.Objects;
 
 namespace devicesConnector.FiscalRegistrar.Commands;
 

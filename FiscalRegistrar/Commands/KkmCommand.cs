@@ -8,10 +8,6 @@ namespace devicesConnector.FiscalRegistrar.Commands;
 /// </summary>
 public abstract class KkmCommand : DeviceCommand
 {
-    /// <summary>
-    /// Тип ККМ
-    /// </summary>
-    public Enums.KkmTypes KkmType { get; set; }
 
     /// <summary>
     /// Специфичные для страны данные

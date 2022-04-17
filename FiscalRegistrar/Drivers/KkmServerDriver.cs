@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using devicesConnector.Common;
 using devicesConnector.FiscalRegistrar.Objects;
+using Enums = devicesConnector.FiscalRegistrar.Objects.Enums;
 
 namespace devicesConnector.FiscalRegistrar.Drivers;
 

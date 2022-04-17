@@ -1,14 +1,6 @@
 //kkm/getReport
 {
-  "Connection": {
-    "ConnectionType": "Lan",
-    "Lan": {
-      "HostUrl": "localhost",
-      "PortNumber": 5893,
-      "UserLogin": "User",
-      "UserPassword": ""
-    }
-  },
+  "DeviceId": 1,
   "Cashier": {
     "Name": "Ivanov",
     "TaxId": "123456879012"

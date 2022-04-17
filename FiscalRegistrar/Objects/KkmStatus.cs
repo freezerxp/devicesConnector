@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using devicesConnector.FiscalRegistrar.Objects;
 
 namespace devicesConnector
 {

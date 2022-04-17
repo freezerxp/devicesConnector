@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace devicesConnector;
+namespace devicesConnector.FiscalRegistrar.Objects;
 
 public class Enums
 {
@@ -16,37 +16,37 @@ public class Enums
         /// <summary>
         /// АТОЛ ДТО8
         /// </summary>
-        Atol8,
+        Atol8=101,
 
         /// <summary>
         /// АТОЛ ДТО10
         /// </summary>
-        Atol10,
+        Atol10=102,
 
         /// <summary>
         /// АТОЛ Веб-сервер
         /// </summary>
-        AtolWebServer,
+        AtolWebServer=103,
 
         /// <summary>
         /// Штрих-М
         /// </summary>
-        ShtrihM,
+        ShtrihM=104,
 
         /// <summary>
         /// Вики-Принт
         /// </summary>
-        VikiPrint,
+        VikiPrint=105,
 
         /// <summary>
         /// Меркурий
         /// </summary>
-        Mercury,
+        Mercury=106,
 
         /// <summary>
         /// ККМ-Сервер
         /// </summary>
-        KkmServer
+        KkmServer=107
 
         #endregion
 

@@ -2,6 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using devicesConnector.Common;
+using devicesConnector.Configs;
 using devicesConnector.FiscalRegistrar.Commands;
 using devicesConnector.FiscalRegistrar.Devices;
 using devicesConnector.FiscalRegistrar.Objects;
@@ -17,7 +18,9 @@ public class KkmMapCreator : IMapCreator
         {
             var c = await GetCommand<KkmGetStatusCommand>(context);
 
-            var kkmH = new FiscalRegistrarFacade(c.Connection, c.KkmType);
+            var d = GetDeviceById(c.DeviceId);
+
+            var kkmH = new FiscalRegistrarFacade(d);
 
             return GetResult(() => kkmH.GetStatus());
 
@@ -27,7 +30,9 @@ public class KkmMapCreator : IMapCreator
         {
             var c = await GetCommand<KkmOpenSessionCommand>(context);
 
-            var kkmH = new FiscalRegistrarFacade(c.Connection, c.KkmType);
+            var d = GetDeviceById(c.DeviceId);
+
+            var kkmH = new FiscalRegistrarFacade(d);
 
             return GetResult(() => kkmH.OpenSession(c.Cashier));
         });
@@ -36,7 +41,10 @@ public class KkmMapCreator : IMapCreator
         {
             var c = await GetCommand<KkmCashInOutCommand>(context);
 
-            var kkmH = new FiscalRegistrarFacade(c.Connection, c.KkmType);
+            var d = GetDeviceById(c.DeviceId);
+
+
+            var kkmH = new FiscalRegistrarFacade(d);
 
             return GetResult(() => kkmH.CashInOut(c.Sum, c.Cashier));
         });
@@ -45,7 +53,9 @@ public class KkmMapCreator : IMapCreator
         {
             var c = await GetCommand<KkmGetReportCommand>(context);
 
-            var kkmH = new FiscalRegistrarFacade(c.Connection, c.KkmType);
+            var d = GetDeviceById(c.DeviceId);
+
+            var kkmH = new FiscalRegistrarFacade(d);
 
 
             return GetResult(() => kkmH.GetReport(c.ReportType, c.Cashier));
@@ -55,10 +65,23 @@ public class KkmMapCreator : IMapCreator
         {
             var c = await GetCommand<KkmPrintFiscalReceiptCommand>(context);
 
-            var kkmH = new FiscalRegistrarFacade(c.Connection, c.KkmType);
+            var d = GetDeviceById(c.DeviceId);
+
+            var kkmH = new FiscalRegistrarFacade(d);
 
             return GetResult(() => kkmH.PrintFiscalReceipt(c.ReceiptData));
         });
+    }
+
+    private Device GetDeviceById(int id)
+    {
+        var cr = new ConfigRepository();
+        var c = cr.Get();
+
+        var d = c.Devices.FirstOrDefault(x => x.Id == id);
+
+
+        return d;
     }
 
     private static IResult GetResult<T>(Func<T> func)

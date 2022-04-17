@@ -1,5 +1,7 @@
 ﻿using devicesConnector.Common;
+using devicesConnector.Configs;
 using devicesConnector.FiscalRegistrar.Devices.Russia;
+using Enums = devicesConnector.FiscalRegistrar.Objects.Enums;
 
 namespace devicesConnector.FiscalRegistrar.Devices;
 
@@ -8,11 +10,11 @@ public class FiscalRegistrarFacade
 
     private IFiscalRegistrarDevice _kkm;
 
-    public FiscalRegistrarFacade(DeviceConnection connection, Enums.KkmTypes kkmType)
+    public FiscalRegistrarFacade(Device device)
     {
 
 
-        switch (kkmType)
+        switch ((Enums.KkmTypes)device.SubType)
         {
             case Enums.KkmTypes.Atol8:
                 break;
@@ -27,10 +29,10 @@ public class FiscalRegistrarFacade
             case Enums.KkmTypes.Mercury:
                 break;
             case Enums.KkmTypes.KkmServer:
-                _kkm = new KkmServerDevice(connection.Lan);
+                _kkm = new KkmServerDevice(device.Connection.Lan);
                 break;
             default:
-                throw new ArgumentOutOfRangeException(nameof(kkmType), kkmType, null);
+                throw new ArgumentOutOfRangeException(nameof(device.SubType), device.SubType, null);
         }
 
     }

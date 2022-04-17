@@ -1,17 +1,8 @@
 //kkm/printFiscalReceipt
 {
-  "Connection": {
-    "ConnectionType": "Lan",
-    "Lan": {
-      "HostUrl": "localhost",
-      "PortNumber": 5893,
-      "UserLogin": "User",
-      "UserPassword": ""
-    }
-  },
+  "DeviceId": 1,
   "KkmType": "KkmServer",
-  "ReceiptData": 
-  {
+  "ReceiptData": {
     "FiscalType": "Fiscal",
     "OperationType": "Sale",
     "Cashier": {
@@ -29,7 +20,7 @@
           "FfdData": {
             "Subject": 1,
             "Method": 4
-          } 
+          }
         },
         "Comment": null
       },
@@ -54,7 +45,7 @@
       }
     ],
     "CountrySpecificData": {
-      "TaxVariantIndex": 1 
+      "TaxVariantIndex": 1
     }
   }
 

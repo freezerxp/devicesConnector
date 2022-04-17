@@ -1,5 +1,6 @@
 ﻿using devicesConnector.Common;
 using devicesConnector.FiscalRegistrar.Objects;
+using Enums = devicesConnector.FiscalRegistrar.Objects.Enums;
 
 namespace devicesConnector.FiscalRegistrar.Devices;
 

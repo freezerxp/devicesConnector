@@ -4,6 +4,7 @@ using devicesConnector.FiscalRegistrar.Drivers;
 using devicesConnector.FiscalRegistrar.Objects;
 using devicesConnector.FiscalRegistrar.Objects.CountrySpecificData;
 using devicesConnector.FiscalRegistrar.Objects.CountrySpecificData.Russia;
+using Enums = devicesConnector.FiscalRegistrar.Objects.Enums;
 
 namespace devicesConnector.FiscalRegistrar.Devices.Russia;
 
