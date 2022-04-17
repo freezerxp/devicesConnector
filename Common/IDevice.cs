@@ -1,4 +1,4 @@
-﻿namespace devicesConnector;
+﻿namespace devicesConnector.Common;
 
 /// <summary>
 /// Интерфейс устройства

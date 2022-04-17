@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using devicesConnector.Common;
 
 namespace devicesConnector.FiscalRegistrar.Drivers;
 

@@ -1,6 +1,6 @@
-{
+[
   //kkm/openSession/getStatus
-  "GetStatus": {
+  {
     "Connection": {
       "ConnectionType": "Lan",
       "Lan": {
@@ -14,7 +14,7 @@
   },
 
   //kkm/openSession
-  "OpenSession": {
+  {
     "Connection": {
       "ConnectionType": "Lan",
       "Lan": {
@@ -33,7 +33,7 @@
 
 
   //kkm/cashInOut
-  "CashInOut": {
+  {
     "Connection": {
       "ConnectionType": "Lan",
       "Lan": {
@@ -53,7 +53,7 @@
 
 
   //kkm/getReport
-  "GetReport": {
+  {
     "Connection": {
       "ConnectionType": "Lan",
       "Lan": {
@@ -67,7 +67,7 @@
       "Name": "Ivanov",
       "TaxId": "123456879012"
     },
-    "Type": "ZReport",
+    "ReportType": "ZReport",
     "KkmType": "KkmServer"
   }
-}
+]

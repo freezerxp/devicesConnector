@@ -3,7 +3,7 @@
 /// <summary>
 /// Запись о товара в чеке
 /// </summary>
-public class ReceiptGood
+public class ReceiptItem
 {
     /// <summary>
     /// Название товара

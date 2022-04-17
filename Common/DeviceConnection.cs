@@ -1,8 +1,7 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.IO.Ports;
+using System.Text.Json.Serialization;
 
-namespace devicesConnector;
-
-using System.IO.Ports;
+namespace devicesConnector.Common;
 
 public class DeviceConnection
 {

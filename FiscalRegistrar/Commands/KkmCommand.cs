@@ -1,9 +1,8 @@
-﻿using devicesConnector.Drivers;
-using devicesConnector.FiscalRegistrar.Devices;
+﻿using devicesConnector.Common;
 
 namespace devicesConnector.FiscalRegistrar.Commands;
 
 public abstract class KkmCommand : DeviceCommand
 {
-    public KkmHelper.KkmTypes KkmType { get; set; }
+    public Enums.KkmTypes KkmType { get; set; }
 }

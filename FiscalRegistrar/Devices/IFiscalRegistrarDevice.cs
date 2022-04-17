@@ -1,4 +1,5 @@
-﻿using devicesConnector.FiscalRegistrar.Devices;
+﻿using devicesConnector.Common;
+using devicesConnector.FiscalRegistrar.Devices;
 
 namespace devicesConnector.Drivers;
 
@@ -16,7 +17,7 @@ public interface IFiscalRegistrarDevice: IDevice
     /// <summary>
     /// Снять отчет
     /// </summary>
-    public void GetReport(KkmHelper.ReportTypes type, Cashier cashier);
+    public void GetReport(Enums.ReportTypes type, Cashier cashier);
 
     /// <summary>
     /// Напечатать фискальный чек

@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using devicesConnector.Common;
 using devicesConnector.Drivers;
 using devicesConnector.FiscalRegistrar.Drivers;
 
@@ -58,21 +59,21 @@ public class KkmServerDevice : IFiscalRegistrarDevice
 
     }
 
-    public void GetReport(KkmHelper.ReportTypes type, Cashier cashier)
+    public void GetReport(Enums.ReportTypes type, Cashier cashier)
     {
         switch (type)
         {
-            case KkmHelper.ReportTypes.ZReport:
+            case Enums.ReportTypes.ZReport:
                 _driver.SendCommand(new KkmServerDriver.KkmCloseShift
                 {
                     CashierName = cashier.Name,
                     CashierVATIN = cashier.TaxId
                 });
                 break;
-            case KkmHelper.ReportTypes.XReport:
+            case Enums.ReportTypes.XReport:
                 _driver.SendCommand(new KkmServerDriver.KkmGetXReport());
                 break;
-            case KkmHelper.ReportTypes.XReportWithGoods:
+            case Enums.ReportTypes.XReportWithGoods:
                 throw new NotSupportedException();
                 break;
             default:
@@ -107,6 +108,13 @@ public class KkmServerDevice : IFiscalRegistrarDevice
 
     public void CashOut(decimal sum, Cashier cashier)
     {
-        throw new NotImplementedException();
+        var c = new KkmServerDriver.KkmCashOut
+        {
+            CashierName = cashier.Name,
+            CashierVATIN = cashier.TaxId,
+            Amount = sum
+        };
+
+        _driver.SendCommand(c);
     }
 }

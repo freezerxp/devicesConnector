@@ -6,5 +6,5 @@ public class KkmGetReportCommand:KkmCommand
 {
     public Cashier Cashier { get; set; }
 
-    public KkmHelper.ReportTypes Type { get; set; }
+    public Enums.ReportTypes ReportType { get; set; }
 }
