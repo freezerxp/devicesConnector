@@ -7,6 +7,9 @@ namespace devicesConnector;
 /// </summary>
 public class ReceiptData
 {
+
+
+
     /// <summary>
     /// Фискальный тип чека
     /// </summary>
@@ -23,6 +26,12 @@ public class ReceiptData
     public Cashier Cashier { get; set; }
 
     /// <summary>
+    /// Покупатель
+    /// </summary>
+    public Contractor Contractor { get; set; }
+
+
+    /// <summary>
     /// Перечень позиций в чеке
     /// </summary>
     public List<ReceiptItem> Items { get; set; }
@@ -32,4 +41,7 @@ public class ReceiptData
     /// </summary>
     public List<ReceiptPayment> Payments { get; set; }
 
+    public ICountrySpecificReceiptData CountrySpecificData { get; set; }
+
 }
+

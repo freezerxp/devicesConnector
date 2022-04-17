@@ -71,7 +71,10 @@ public class KkmServerDevice : IFiscalRegistrarDevice
                 });
                 break;
             case Enums.ReportTypes.XReport:
-                _driver.SendCommand(new KkmServerDriver.KkmGetXReport());
+                _driver.SendCommand(new KkmServerDriver.KkmGetXReport
+                {
+
+                });
                 break;
             case Enums.ReportTypes.XReportWithGoods:
                 throw new NotSupportedException();

@@ -1,4 +1,6 @@
-﻿namespace devicesConnector;
+﻿using devicesConnector.FiscalRegistrar.Objects;
+
+namespace devicesConnector;
 
 /// <summary>
 /// Запись о товара в чеке
@@ -26,7 +28,10 @@ public class ReceiptItem
     /// </summary>
     public decimal Quantity { get; set; }
 
-    public RuKkmInfo? RuKkmData { get; set; }
+    /// <summary>
+    /// Данные, специфичные для региона
+    /// </summary>
+    public ICountrySpecificReceiptItemData? CountrySpecificData { get; set; }
 
     /// <summary>
     /// Комментарий
