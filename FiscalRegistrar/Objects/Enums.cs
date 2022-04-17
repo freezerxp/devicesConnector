@@ -300,11 +300,11 @@ public class Enums
         /// <summary>
         /// неизвестная ошибка
         /// </summary>
-        Unknown,
+        Unknown=-1,
         /// <summary>
         /// Необходимо обратиться в сервис
         /// </summary>
-        NeedService,
+        NeedService=1,
         /// <summary>
         /// Нет бумаги
         /// </summary>

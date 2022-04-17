@@ -50,8 +50,9 @@ public class KkmServerDriver
 
             throw new KkmException(null, Enums.ErrorTypes.Unknown,null,r.Error);
         }
+     
 
-        if (rezult.Status != 0)
+        if (rezult?.Status != 0)
         {
             throw new KkmException(null, Enums.ErrorTypes.Unknown, null, rezult.Error);
             
