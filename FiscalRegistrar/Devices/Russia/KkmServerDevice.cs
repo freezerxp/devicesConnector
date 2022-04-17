@@ -40,7 +40,8 @@ public class KkmServerDevice : IFiscalRegistrarDevice
             SessionNumber = answer.SessionNumber,
             SoftwareVersion = answer.Info.Firmware_Version,
             FnDateEnd = answer.Info.FN_DateEnd,
-            CashSum = answer.Info.BalanceCash
+            CashSum = answer.Info.BalanceCash,
+            FactoryNumber = answer.Info.KktNumber
             
         };
 
@@ -85,12 +86,6 @@ public class KkmServerDevice : IFiscalRegistrarDevice
       
     }
 
-    /// <summary>
-    /// Открываем чек
-    /// </summary>
-    /// <param name="receipt">Данные чека</param>
-    /// <exception cref="NullReferenceException"></exception>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
     public void OpenReceipt(ReceiptData? receipt)
     {
         if (receipt == null)
@@ -189,24 +184,32 @@ public class KkmServerDevice : IFiscalRegistrarDevice
                Name = item.Name,
                Price = item.Price,
                Quantity = item.Quantity,
+               Amount = Math.Round(item.Price * item.Quantity, 2, MidpointRounding.AwayFromZero), 
                Department = item.DepartmentIndex ,
                Tax = taxValue
            }
        };
 
        //специфичные для РФ данные
-       RuReceiptItemData? ruData = item.CountrySpecificData.Deserialize<RuReceiptItemData>();
+       var ruData = item.CountrySpecificData.Deserialize<RuReceiptItemData>();
 
 
        if (ruData != null)
        {
+           //ФФД 
            cs.Register.SignCalculationObject = (int) ruData.FfdData.Subject;
            cs.Register.SignMethodCalculation = (int) ruData.FfdData.Method;
 
+           //Маркировка
+           cs.Register.GoodCodeData = new KkmServerDriver.KkmPrintCheck.Register.GoodCode()
+           {
+               BarCode = ruData.MarkingInfo.RawCode,
+               AcceptOnBad = true,
+               ContainsSerialNumber = false
+           };
+        }
 
-           //todo: работа с маркировкой
-       }
-
+       //добавляем в чек
        _kkmCheckCommand.CheckStrings.Add(cs);
 
 

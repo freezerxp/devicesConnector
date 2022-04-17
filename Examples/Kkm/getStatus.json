@@ -1,0 +1,15 @@
+
+//kkm/openSession/getStatus
+{
+  "Connection": {
+    "ConnectionType": "Lan",
+    "Lan": {
+      "HostUrl": "localhost",
+      "PortNumber": 5893,
+      "UserLogin": "User",
+      "UserPassword": ""
+    }
+  },
+  "KkmType": "KkmServer"
+}
+  

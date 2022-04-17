@@ -1,0 +1,18 @@
+//kkm/openSession
+{
+  "Connection": {
+    "ConnectionType": "Lan",
+    "Lan": {
+      "HostUrl": "localhost",
+      "PortNumber": 5893,
+      "UserLogin": "User",
+      "UserPassword": ""
+    }
+  },
+  "Cashier": {
+    "Name": "Ivanov",
+    "TaxId": "123456879012"
+  },
+  "KkmType": "KkmServer"
+}
+

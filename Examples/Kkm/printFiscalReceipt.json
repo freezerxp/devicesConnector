@@ -1,0 +1,62 @@
+//kkm/printFiscalReceipt
+{
+  "Connection": {
+    "ConnectionType": "Lan",
+    "Lan": {
+      "HostUrl": "localhost",
+      "PortNumber": 5893,
+      "UserLogin": "User",
+      "UserPassword": ""
+    }
+  },
+  "KkmType": "KkmServer",
+  "ReceiptData": 
+  {
+    "FiscalType": "Fiscal",
+    "OperationType": "Sale",
+    "Cashier": {
+      "Name": "Ivanov",
+      "TaxId": "123456879012"
+    },
+    "Contractor": null,
+    "Items": [
+      {
+        "Name": "Телевизор Заря",
+        "Price": 1234.56,
+        "Discount": 0.0,
+        "Quantity": 1.23,
+        "CountrySpecificData": {
+          "FfdData": {
+            "Subject": 1,
+            "Method": 4
+          } 
+        },
+        "Comment": null
+      },
+      {
+        "Name": "Батарейка \"Мощная\"",
+        "Price": 7.89,
+        "Discount": 0.0,
+        "Quantity": 2,
+        "CountrySpecificData": {
+          "FfdData": {
+            "Subject": 1,
+            "Method": 4
+          }
+        },
+        "Comment": null
+      }
+    ],
+    "Payments": [
+      {
+        "Sum": 1500.00,
+        "MethodIndex": 1
+      }
+    ],
+    "CountrySpecificData": {
+      "TaxVariantIndex": 1 
+    }
+  }
+
+}
+

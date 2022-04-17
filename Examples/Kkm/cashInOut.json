@@ -1,0 +1,19 @@
+//kkm/cashInOut
+{
+  "Connection": {
+    "ConnectionType": "Lan",
+    "Lan": {
+      "HostUrl": "localhost",
+      "PortNumber": 5893,
+      "UserLogin": "User",
+      "UserPassword": ""
+    }
+  },
+  "Cashier": {
+    "Name": "Ivanov",
+    "TaxId": "123456879012"
+  },
+  "Sum": 12345.56,
+  "KkmType": "KkmServer"
+}
+   

@@ -42,6 +42,12 @@ public class KkmServerDriver
 
         var rezult = r.Rezult.Deserialize<KkmServerAnswer>();
 
+
+        if (r.Status != 0)
+        {
+            throw new Exception(r.Error);
+        }
+
         if (rezult.Status != 0)
         {
             throw new Exception(rezult.Error);
@@ -521,6 +527,11 @@ public class KkmServerDriver
             /// </summary>
             // ReSharper disable once InconsistentNaming
             public DateTime FN_DateEnd { get; set; }
+
+            /// <summary>
+            /// Заводской номер ККМ
+            /// </summary>
+            public string KktNumber { get; set; }
         }
     }
 

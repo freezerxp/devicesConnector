@@ -128,17 +128,7 @@ public class Enums
         ReturnBuy
     }
 
-    /// <summary>
-    /// Страны 
-    /// </summary>
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum Countries //для учета особенностей работы кассовой техники
-    {
-        /// <summary>
-        /// Россия
-        /// </summary>
-        Russia
-    }
+ 
 
     /// <summary>
     /// Версии ФФД

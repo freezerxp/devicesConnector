@@ -12,8 +12,5 @@ public abstract class KkmCommand : DeviceCommand
     /// </summary>
     public Enums.KkmTypes KkmType { get; set; }
 
-    /// <summary>
-    /// Страна
-    /// </summary>
-    public Enums.Countries Country { get; set; } //для учета специфики работы кассовой техники
+ 
 }

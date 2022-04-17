@@ -19,6 +19,10 @@ public class RuReceiptItemData: ICountrySpecificReceiptItemData
     public RuFfdInfo FfdData { get; set; }
 
     /// <summary>
+    /// Информация о маркировке
+    /// </summary>
+    public RuMarkingInfo MarkingInfo { get; set; }
+    /// <summary>
     /// Данные по ФФД
     /// </summary>
     public class RuFfdInfo
@@ -33,6 +37,17 @@ public class RuReceiptItemData: ICountrySpecificReceiptItemData
         /// Признак способа расчета (тег 1214)
         /// </summary>
         public Enums.FfdCalculationMethods Method { get; set; }
+    }
+
+    /// <summary>
+    /// Информация о маркировке
+    /// </summary>
+    public class RuMarkingInfo
+    {
+        /// <summary>
+        /// Полный код маркировки 
+        /// </summary>
+        public string RawCode { get; set; }
     }
 }
 
