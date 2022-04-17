@@ -58,7 +58,6 @@ public class Enums
     /// <summary>
     /// Типы команды для ККМ
     /// </summary>
-    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum CommandTypes
     {
         /// <summary>

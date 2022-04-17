@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Nodes;
 using devicesConnector.Configs;
+using devicesConnector.FiscalRegistrar.Commands;
 using devicesConnector.FiscalRegistrar.Devices;
 
 namespace devicesConnector.Common;
@@ -26,7 +27,6 @@ public class CommandsQueueRepository
     /// </summary>
     public class CommandQueue
     {
-        
         /// <summary>
         /// Команда
         /// </summary>
@@ -49,34 +49,39 @@ public class CommandsQueueRepository
     /// <param name="command">Команда</param>
     public void AddToQueue(JsonNode command)
     {
-
-        if (_commandsQueue.Any(x => x.Command.Deserialize<DeviceCommand>()?.Id == command.Deserialize<DeviceCommand>()?.Id))
+        if (CommandsHistory.Any(x =>
+                x.Command.Deserialize<DeviceCommand>()?.CommandId == command.Deserialize<DeviceCommand>()?.CommandId))
         {
             throw new Exception("Команда с указанным ИД уже есть в очереди");
         }
 
-        var cq = new CommandQueue();
-        cq.Command = command;
-        cq.Status = Answer.Statuses.Wait;
+        var cq = new CommandQueue
+        {
+            Command = command,
+            Status = Answer.Statuses.Wait
+        };
 
         _commandsQueue.Enqueue(cq);
         CommandsHistory.Add(cq);
     }
 
+    /// <summary>
+    /// Получаем результат выполнения команды
+    /// </summary>
+    /// <param name="commandId">Идентификатор команды</param>
+    /// <returns></returns>
     public CommandQueue GetCommandState(string commandId)
     {
-
-      return   CommandsHistory.First(x => x.Command["Id"]?.ToString() == commandId);
-        
-    
+        return CommandsHistory.First(x => x.Command.Deserialize<DeviceCommand>()?.CommandId == commandId);
     }
 
-
+    /// <summary>
+    /// Инициализация обработки очереди
+    /// </summary>
     public static void Init()
     {
         Task.Run(() =>
         {
-
             while (true)
             {
                 try
@@ -85,16 +90,15 @@ public class CommandsQueueRepository
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
-                    
+                    Console.WriteLine(e.ToString());
                 }
-
             }
-
-
         });
     }
 
+    /// <summary>
+    /// Выполнение команды
+    /// </summary>
     private static void DoCommand()
     {
         if (_commandsQueue.Any() == false)
@@ -113,57 +117,52 @@ public class CommandsQueueRepository
 
         if (d.Type == Enums.DeviceTypes.FiscalRegistrar)
         {
-            DoKkmCommand(c);
+            var manager = new KkmCommandsManager();
+            manager.Do(c);
         }
-
-      
     }
 
-    private static  void DoKkmCommand(CommandQueue cq)
+
+    public static void SetResult(Action action, CommandQueue cq)
     {
-        var deviceCommand = cq.Command.Deserialize<DeviceCommand>();
-
-        if (deviceCommand == null)
+        try
         {
-            throw new NullReferenceException();
+            action();
+            cq.Status = Answer.Statuses.Ok;
         }
-
-        var hi = CommandsHistory.First(x => x.Command["Id"]?.ToString() == deviceCommand.Id);
-        hi.Status = Answer.Statuses.Run;
-
-        var commandType = (FiscalRegistrar.Objects.Enums.CommandTypes) deviceCommand.CommandType;
-
-        var d = GetDeviceById(deviceCommand.DeviceId);
-
-        var kkm = new FiscalRegistrarFacade(d);
-
-        switch (commandType)
+        catch (Exception e)
         {
-            case FiscalRegistrar.Objects.Enums.CommandTypes.GetStatus:
-                
-                var status = kkm.GetStatus();
-
-
-                
-                hi.Result = JsonSerializer.SerializeToNode(status);
-                hi.Status = Answer.Statuses.Ok;
-
-                break;
-            case FiscalRegistrar.Objects.Enums.CommandTypes.OpenSession:
-                break;
-            case FiscalRegistrar.Objects.Enums.CommandTypes.CashInOut:
-                break;
-            case FiscalRegistrar.Objects.Enums.CommandTypes.DoReport:
-                break;
-            case FiscalRegistrar.Objects.Enums.CommandTypes.PrintFiscalReceipt:
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
+            cq.Status = Answer.Statuses.Error;
+            cq.Result = JsonSerializer.SerializeToNode(new ErrorObject(e));
         }
     }
 
+    public static void SetResult<T>(Func<T> func, CommandQueue cq)
+    {
+        try
+        {
+            var result = func.Invoke();
+            cq.Status = Answer.Statuses.Ok;
+            cq.Result = JsonSerializer.SerializeToNode(result);
+        }
+        catch (Exception e)
+        {
+            cq.Status = Answer.Statuses.Error;
+            cq.Result = JsonSerializer.SerializeToNode(new ErrorObject(e));
+        }
 
-    private static Device GetDeviceById(string id)
+
+
+     
+
+    }
+
+    /// <summary>
+    /// Получить устройство по ИД
+    /// </summary>
+    /// <param name="id">ИД устройства</param>
+    /// <returns></returns>
+    public static Device GetDeviceById(string id)
     {
         var cr = new ConfigRepository();
         var c = cr.Get();

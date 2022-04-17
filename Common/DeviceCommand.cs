@@ -12,7 +12,7 @@ public   class DeviceCommand
     /// <summary>
     /// Идентификатор команды
     /// </summary>
-    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public string CommandId { get; set; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// Id устройства
