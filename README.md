@@ -1,4 +1,4 @@
-# devicesConnector
+# Pos Devices Connector
 
 Привет!
 Это открытый проект по разработке "коннектора" для POS-устройств:
@@ -8,3 +8,5 @@
 и т.п.
 
 Присоединяйтесь к обсуждению: https://t.me/+9pSYGuGPN5VjYTUy
+
+Разработано в <a href="https://gbsmarket.ru">GBS.Market Team</a> при участии <a href="https://midays.ru/">MiDays Commerce</a>
