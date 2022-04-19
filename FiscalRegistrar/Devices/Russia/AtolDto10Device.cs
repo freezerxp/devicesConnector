@@ -219,27 +219,206 @@ public class AtolDto10Device : IFiscalRegistrarDevice
 
     public void GetReport(Enums.ReportTypes type, Cashier cashier)
     {
-        throw new NotImplementedException();
+        switch (type)
+        {
+            case Enums.ReportTypes.ZReport:
+
+                var ffdV = _deviceConfig.DeviceSpecificConfig.Deserialize<Objects.CountrySpecificData.Russia.KkmConfig>()?.FfdVersion;
+
+                if (ffdV != Enums.FFdVersions.Offline)
+                {
+                    OperatorLogin(cashier);
+                }
+
+                _driver.setParam(_driver.LIBFPTR_PARAM_REPORT_TYPE, _driver.LIBFPTR_RT_CLOSE_SHIFT);
+                break;
+            case Enums.ReportTypes.XReport:
+                _driver.setParam(_driver.LIBFPTR_PARAM_REPORT_TYPE, _driver.LIBFPTR_RT_X);
+                break;
+            case Enums.ReportTypes.XReportWithGoods:
+                throw new NotSupportedException();
+
+            default:
+                throw new ArgumentOutOfRangeException(nameof(type), type, null);
+        }
+
+        _driver.report();
+        _driver.checkDocumentClosed();
+
+        CheckResult();
     }
 
     public void OpenReceipt(ReceiptData? receipt)
     {
-        throw new NotImplementedException();
+        var ffdV = _deviceConfig.DeviceSpecificConfig.Deserialize<Objects.CountrySpecificData.Russia.KkmConfig>()?.FfdVersion;
+
+
+        if (ffdV == Enums.FFdVersions.Ffd120)
+        {
+            //Ffd120CodeValidation(checkData);
+        }
+
+
+        if (ffdV != Enums.FFdVersions.Offline)
+        {
+            OperatorLogin(receipt.Cashier);
+
+            var ofdTaxCode = receipt.CountrySpecificData.Deserialize<Objects.CountrySpecificData.Russia.ReceiptData>()!.TaxVariantIndex;
+
+            if (ofdTaxCode > 0)
+            {
+                WriteOfdAttribute((int)Enums.OfdAttributes.TaxSystem, ofdTaxCode);
+            }
+
+            if (receipt.Contractor != null)
+            {
+                if (ffdV.IsEither(Enums.FFdVersions.Ffd120))
+                {
+                    _driver.utilFormTlv();
+                }
+
+                WriteOfdAttribute((int)Enums.OfdAttributes.ClientName, receipt.Contractor.Name);
+
+                if (!receipt.Contractor.TaxId.IsNullOrEmpty())
+                {
+                    WriteOfdAttribute((int)Enums.OfdAttributes.ClientInn, receipt.Contractor.TaxId);
+                }
+
+                
+
+
+                if (ffdV == Enums.FFdVersions.Ffd120)
+                {
+                    _driver.utilFormTlv();
+                    Thread.Sleep(1000);
+                    byte[] clientInfo = _driver.getParamByteArray(_driver.LIBFPTR_PARAM_TAG_VALUE);
+
+                    _driver.setParam(1256, clientInfo);
+                }
+            }
+
+            //SendDigitalCheck(checkData.AddressForDigitalCheck);
+        }
+
+        var checkType = receipt.OperationType switch
+        {
+            Enums.ReceiptOperationTypes.Sale => _driver.LIBFPTR_RT_SELL,
+            Enums.ReceiptOperationTypes.ReturnSale => _driver.LIBFPTR_RT_SELL_RETURN,
+            Enums.ReceiptOperationTypes.Buy => _driver.LIBFPTR_RT_BUY,
+            Enums.ReceiptOperationTypes.ReturnBuy => _driver.LIBFPTR_RT_BUY_RETURN,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
+        _driver.setParam(_driver.LIBFPTR_PARAM_RECEIPT_TYPE, checkType);
+
+
+        //if (DevicesConfig.CheckPrinter.FiscalKkm.IsAlwaysNoPrintCheck)
+        //{
+        //    LogHelper.Debug("Выключаем печать бумажного чека АТОЛ");
+        //    AtolDriver.setParam(AtolDriver.LIBFPTR_PARAM_RECEIPT_ELECTRONICALLY, true);
+
+        //}
+
+        _driver.openReceipt();
+
+        CheckResult();
     }
 
     public void CloseReceipt()
     {
-        throw new NotImplementedException();
+        _driver.closeReceipt();
+        _driver.checkDocumentClosed();
+        CheckResult();
     }
 
     public void RegisterItem(ReceiptItem item)
     {
-        throw new NotImplementedException();
+        var ffdV = _deviceConfig.DeviceSpecificConfig.Deserialize<Objects.CountrySpecificData.Russia.KkmConfig>()?.FfdVersion;
+        var receiptItemData = item.CountrySpecificData.Deserialize<Objects.CountrySpecificData.Russia.ReceiptItemData>();
+
+        _driver.setParam(_driver.LIBFPTR_PARAM_TAX_TYPE, _driver.LIBFPTR_TAX_NO);
+
+        _driver.setParam(_driver.LIBFPTR_PARAM_COMMODITY_NAME, item.Name);
+        _driver.setParam(_driver.LIBFPTR_PARAM_PRICE, (double)item.Price);
+        _driver.setParam(_driver.LIBFPTR_PARAM_QUANTITY, (double)item.Quantity);
+        _driver.setParam(_driver.LIBFPTR_PARAM_DEPARTMENT, item.DepartmentIndex);
+        _driver.setParam(_driver.LIBFPTR_PARAM_INFO_DISCOUNT_SUM, (double)item.DiscountSum);
+
+        var driverTaxValue = item.TaxRateIndex switch
+        {
+            1 => _driver.LIBFPTR_TAX_NO,
+            2 => _driver.LIBFPTR_TAX_VAT0,
+            3 => _driver.LIBFPTR_TAX_VAT10,
+            4 => _driver.LIBFPTR_TAX_VAT20,
+            5 => _driver.LIBFPTR_TAX_VAT110,
+            6 => _driver.LIBFPTR_TAX_VAT120,
+            _ => _driver.LIBFPTR_TAX_NO
+        };
+
+
+        _driver.setParam(_driver.LIBFPTR_PARAM_TAX_TYPE, driverTaxValue);
+
+
+        var typeGoodOfd = receiptItemData.FfdData.Subject == Enums.FfdCalculationSubjects.None
+                    ? Enums.FfdCalculationSubjects.SimpleGood : receiptItemData.FfdData.Subject;
+
+
+        _driver.setParam(1212, typeGoodOfd);
+        _driver.setParam(1214, receiptItemData.FfdData.Method);
+
+
+
+        switch (ffdV)
+        {
+            case Enums.FFdVersions.Offline:
+            case Enums.FFdVersions.Ffd100:
+                break;
+            case Enums.FFdVersions.Ffd105:
+            case Enums.FFdVersions.Ffd110:
+                //SetInfo_ffd105_ffd110(good);
+                break;
+            case Enums.FFdVersions.Ffd120:
+                //SetInfo_ffd120(good);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+
+
+        
+        _driver.registration();
+
+
+        CheckResult();
+
+        //PrintNonFiscalStrings(good.CommentForFiscalCheck.Select(x => new NonFiscalString(x)).ToList());
     }
 
     public void RegisterPayment(ReceiptPayment payment)
     {
-        throw new NotImplementedException();
+        switch (payment.MethodIndex)
+        {
+            case 1:
+                _driver.setParam(_driver.LIBFPTR_PARAM_PAYMENT_TYPE, _driver.LIBFPTR_PT_CASH);
+                break;
+            case 2:
+                _driver.setParam(_driver.LIBFPTR_PARAM_PAYMENT_TYPE, _driver.LIBFPTR_PT_ELECTRONICALLY);
+                break;
+            case 103:
+                _driver.setParam(_driver.LIBFPTR_PARAM_PAYMENT_TYPE, _driver.LIBFPTR_PT_PREPAID);
+                break;
+            case 104:
+                _driver.setParam(_driver.LIBFPTR_PARAM_PAYMENT_TYPE, _driver.LIBFPTR_PT_CREDIT);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(payment.MethodIndex));
+        }
+
+        _driver.setParam(_driver.LIBFPTR_PARAM_PAYMENT_SUM, (double)payment.Sum);
+        _driver.payment();
+
+        CheckResult();
+
     }
 
     public void PrintText(string text)
@@ -297,11 +476,15 @@ public class AtolDto10Device : IFiscalRegistrarDevice
 
     public void CashIn(decimal sum, Cashier cashier)
     {
-        throw new NotImplementedException();
+        _driver.setParam(_driver.LIBFPTR_PARAM_SUM, (double)sum);
+        _driver.cashOutcome();
+        CheckResult();
     }
 
     public void CashOut(decimal sum, Cashier cashier)
     {
-        throw new NotImplementedException();
+        _driver.setParam(_driver.LIBFPTR_PARAM_SUM, (double)sum);
+        _driver.cashIncome();
+        CheckResult();
     }
 }

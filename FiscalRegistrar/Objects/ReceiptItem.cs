@@ -48,4 +48,11 @@ public class ReceiptItem
     /// Номер секции (отдела)
     /// </summary>
     public int DepartmentIndex { get; set; } = 1;
+
+    /// <summary>
+    /// Сумма скидки на позицию
+    /// </summary>
+    public decimal DiscountSum =>
+        Math.Round(Discount / 100M * Price * Quantity, 2, MidpointRounding.AwayFromZero);
+
 }
