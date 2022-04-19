@@ -32,6 +32,10 @@ public class FiscalRegistrarFacade:IDisposable
             case Enums.KkmTypes.KkmServer:
                 _kkm = new KkmServerDevice(device);
                 break;
+            case Enums.KkmTypes.PortDriverRu:
+                _kkm = new PortDriverRu(device);
+                break;
+
             default:
                 throw new ArgumentOutOfRangeException(nameof(device.SubType), device.SubType, null);
         }
