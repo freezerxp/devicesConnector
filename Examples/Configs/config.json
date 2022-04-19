@@ -1,31 +1,44 @@
 {
- "Devices": [
-  {
-    "Id": "f72b4df8-ae14-45ac-a024-70bc4c123339",
-    "Type": 1,
-    "Name": "ККМ Сервер",
-    "SubType": 107,
-    "Connection": {
-      "ConnectionType": "Lan",
-      "Lan": {
-        "HostUrl": "localhost",
-        "PortNumber": 5893,
-        "UserLogin": "User",
-        "UserPassword": ""
+  "Devices": [
+    {
+      "Id": "f72b4df8-ae14-45ac-a024-70bc4c123339",
+      "Type": 1,
+      "Name": "ККМ Сервер",
+      "SubType": 107,
+      "Connection": {
+        "ConnectionType": "Lan",
+        "Lan": {
+          "HostUrl": "localhost",
+          "PortNumber": 5893,
+          "UserLogin": "User",
+          "UserPassword": ""
+        }
+      }
+    },
+    {
+      "Id": "e4bfd416-8d2f-41ab-9475-2e99208bc330",
+      "Type": 1,
+      "Name": "АТОЛ ДТО 10",
+      "SubType": 102,
+      "Connection": {
+        "ConnectionType": 1,
+        "ComPort": {
+          "PortName": "COM4"
+        }
+      }
+    },
+    {
+      "Id": "4336bac9-9268-4407-8d1e-f21dc22874ef",
+      "Type": 1,
+      "Name": "Вики Принт",
+      "SubType": 105,
+      "Connection": {
+        "ConnectionType": 1,
+        "ComPort": {
+          "PortName": "COM8",
+          "Speed": 9600
+        }
       }
     }
-  },
-   {
-     "Id": "e4bfd416-8d2f-41ab-9475-2e99208bc330",
-     "Type": 1,
-     "Name": "АТОЛ ДТО 10",
-     "SubType": 102,
-     "Connection": {
-       "ConnectionType": 1,
-       "ComPort": {
-         "PortName": "COM4"
-       }
-     }
-   }
   ] 
 }

@@ -19,13 +19,14 @@ public class FiscalRegistrarFacade:IDisposable
             case Enums.KkmTypes.Atol8:
                 break;
             case Enums.KkmTypes.Atol10:
-                _kkm = new AtolDto10(device);
+                _kkm = new AtolDto10Device(device);
                 break;
             case Enums.KkmTypes.AtolWebServer:
                 break;
             case Enums.KkmTypes.ShtrihM:
                 break;
             case Enums.KkmTypes.VikiPrint:
+                _kkm = new VikiPrintDevice(device);
                 break;
             case Enums.KkmTypes.Mercury:
                 break;

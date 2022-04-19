@@ -9,7 +9,7 @@ using Enums = devicesConnector.FiscalRegistrar.Objects.Enums;
 
 namespace devicesConnector.FiscalRegistrar.Devices.Russia;
 
-public class AtolDto10 : IFiscalRegistrarDevice
+public class AtolDto10Device : IFiscalRegistrarDevice
 {
     /// <summary>
     /// Драйвер
@@ -22,7 +22,7 @@ public class AtolDto10 : IFiscalRegistrarDevice
     private Device _deviceConfig;
     
 
-    public AtolDto10(Device device)
+    public AtolDto10Device(Device device)
     {
         _deviceConfig = device;
     }
