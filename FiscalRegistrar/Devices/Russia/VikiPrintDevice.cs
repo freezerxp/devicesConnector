@@ -82,6 +82,11 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
         }
 
 
+        if (GetCashSum(out var cashSum))
+        {
+            status.CashSum = cashSum;
+        }
+
         var versionInfo = FileVersionInfo.GetVersionInfo(PiritlibDllPath);
         status.DriverVersion = new Version(versionInfo.FileVersion ?? "1.0.0.0");
 

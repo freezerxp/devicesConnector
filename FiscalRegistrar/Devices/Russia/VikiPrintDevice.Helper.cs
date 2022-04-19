@@ -432,7 +432,15 @@ public partial class VikiPrintDevice
     /// <returns></returns>
     public static DateTime GetDateTimeFromString(string str)
     {
-        if (!DateTime.TryParseExact(str, "dd.MM.yy.HH.mm.ss", System.Globalization.CultureInfo.InvariantCulture,
+        var df = ".ddMMyy.HHmmss";
+
+        if (str.Length == 7)
+        {
+            df = ".ddMMyy";
+        }
+
+
+        if (!DateTime.TryParseExact(str, df, System.Globalization.CultureInfo.InvariantCulture,
                 DateTimeStyles.None, out var date))
         {
             return date;
@@ -465,16 +473,16 @@ public partial class VikiPrintDevice
     {
         var ans = new MData();
 
-        var errCode = 0;
+        
 
         switch (type)
         {
             case RequestType.CounterAndRegisters:
-               errCode= lib_getCountersAndRegisters(ref ans, requestNumber);
+               lib_getCountersAndRegisters(ref ans, requestNumber);
 
                 break;
             case RequestType.KkmInfo:
-                errCode = lib_getKktInfo(ref ans, requestNumber);
+                 lib_getKktInfo(ref ans, requestNumber);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(type), type, null);
@@ -482,7 +490,6 @@ public partial class VikiPrintDevice
 
         
 
-        LogHelper.Write($"errDode: {errCode}; ans.errCode: {ans.errCode}");
 
         if (ans.errCode == 0)
         {
@@ -695,24 +702,25 @@ public partial class VikiPrintDevice
     /// </summary>
     /// <param name="sum"></param>
     /// <returns></returns>
-    public static int GetCashSum(out decimal sum)
+    public static bool GetCashSum(out decimal sum)
     {
         var ans = new MData();
-        //а зачем здесь ansCode?
+        
         lib_getKktInfo(ref ans, 7);
-        sum = 0;
-        var _resultCode = ans.errCode;
+        
+        var resultCode = ans.errCode;
 
-        if (_resultCode != 0)
+        if (resultCode != 0)
         {
-            return _resultCode;
+            sum = 0;
+            return false;
         }
 
         var strAns = DataToString(ans).Replace(@".", "");
 
         int.TryParse(strAns, out var kkmSum);
         sum = kkmSum / 100M;
-        return _resultCode;
+        return true;
     }
 
     /// <summary>
@@ -737,6 +745,14 @@ public partial class VikiPrintDevice
         return _resultCode;
     }
 
+    private static Encoding cp866()
+    {
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        var enc = Encoding.GetEncoding(866);
+
+        return enc;
+    }
+
     /// <summary>
     /// Преобразование в строку
     /// </summary>
@@ -747,6 +763,8 @@ public partial class VikiPrintDevice
         try
         {
             var newB2 = new List<byte>();
+
+            
 
             for (var i = 8; i <= data.dataLength - 5; i++)
             {
@@ -761,12 +779,18 @@ public partial class VikiPrintDevice
                 }
             }
 
-            var r = Encoding.GetEncoding(866).GetString(newB2.ToArray());
+
+            Console.WriteLine($"newb count: {newB2.Count}");
+
+            var r = cp866().GetString(newB2.ToArray());
+
+            Console.WriteLine($"r: {r}");
 
             return r;
         }
-        catch
+        catch(Exception e)
         {
+            Console.WriteLine(e);
             return string.Empty;
         }
     }
@@ -778,8 +802,8 @@ public partial class VikiPrintDevice
     /// <returns></returns>
     private static string C1251To866(string str1251)
     {
-        var bytes = Encoding.GetEncoding(866).GetBytes(str1251);
-        var newBytes = Encoding.Convert(Encoding.GetEncoding(866), Encoding.GetEncoding(866), bytes);
+        var bytes = cp866().GetBytes(str1251);
+        var newBytes = Encoding.Convert(Encoding.GetEncoding(866), cp866(), bytes);
         return Encoding.GetEncoding(1251).GetString(newBytes);
     }
 
@@ -906,16 +930,18 @@ public partial class VikiPrintDevice
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    private struct MData
+    private  struct MData
     {
         // unsafe
-        public readonly int errCode;
+        public  int errCode;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 256)]
-        public readonly byte[] data;
+        public  byte[] data;
 
-        public readonly int dataLength;
+        public  int dataLength;
     }
+
+   
 
     private bool IsNeedInitialization()
     {
