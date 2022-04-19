@@ -46,7 +46,11 @@ public class Enums
         /// <summary>
         /// ККМ-Сервер
         /// </summary>
-        KkmServer=107
+        KkmServer=107,
+        /// <summary>
+        /// ФР ПОРТ (100Ф/600Ф/1000Ф)
+        /// </summary>
+        PortDriverRu = 108
 
         #endregion
 
