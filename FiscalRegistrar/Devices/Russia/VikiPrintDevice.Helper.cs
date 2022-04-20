@@ -1,10 +1,10 @@
 ﻿using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
-
+using System.Text.Json;
+using devicesConnector.FiscalRegistrar.Objects;
 using devicesConnector.FiscalRegistrar.Objects.CountrySpecificData.Russia;
 using devicesConnector.Helpers;
-using Microsoft.VisualBasic;
 
 namespace devicesConnector.FiscalRegistrar.Devices.Russia;
 
@@ -457,6 +457,24 @@ public partial class VikiPrintDevice
         return date;
     }
 
+    /// <summary>
+    /// Подготовка ФИО + ИНН кассира
+    /// </summary>
+    /// <param name="cashier"></param>
+    /// <returns></returns>
+    private static string PrepareCashierNameAndInn(Cashier cashier)
+    {
+        var ffdV = _deviceConfig.DeviceSpecificConfig.Deserialize<KkmConfig>()?.FfdVersion;
+
+
+        if (cashier.TaxId is {Length: >= 10} && ffdV > Enums.FFdVersions.Ffd100)
+        {
+            return cashier.TaxId + @"&" + cashier.Name;
+        }
+
+        return cashier.Name;
+    }
+
 
 
 
@@ -723,29 +741,9 @@ public partial class VikiPrintDevice
         return true;
     }
 
-    /// <summary>
-    /// Снять з-отчет
-    /// </summary>
-    /// <param name="cashierName"></param>
-    /// <returns></returns>
-    public static int GetZReport(string cashierName)
-    {
-        var _resultCode = lib_zReport(C1251To866(cashierName));
-        return _resultCode;
-    }
 
-    /// <summary>
-    /// Снять х-отчет
-    /// </summary>
-    /// <param name="cashierName"></param>
-    /// <returns></returns>
-    public static int GetXReport(string cashierName)
-    {
-        var _resultCode = lib_xReport(C1251To866(cashierName));
-        return _resultCode;
-    }
 
-    private static Encoding cp866()
+    private static Encoding CP866()
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         var enc = Encoding.GetEncoding(866);
@@ -780,11 +778,9 @@ public partial class VikiPrintDevice
             }
 
 
-            Console.WriteLine($"newb count: {newB2.Count}");
 
-            var r = cp866().GetString(newB2.ToArray());
+            var r = CP866().GetString(newB2.ToArray());
 
-            Console.WriteLine($"r: {r}");
 
             return r;
         }
@@ -802,8 +798,8 @@ public partial class VikiPrintDevice
     /// <returns></returns>
     private static string C1251To866(string str1251)
     {
-        var bytes = cp866().GetBytes(str1251);
-        var newBytes = Encoding.Convert(Encoding.GetEncoding(866), cp866(), bytes);
+        var bytes = CP866().GetBytes(str1251);
+        var newBytes = Encoding.Convert(Encoding.GetEncoding(866), CP866(), bytes);
         return Encoding.GetEncoding(1251).GetString(newBytes);
     }
 

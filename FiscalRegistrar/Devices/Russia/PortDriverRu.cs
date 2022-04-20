@@ -11,7 +11,7 @@ namespace devicesConnector.FiscalRegistrar.Devices.Russia
     // TODO: Обработка действий при ошибке устройства
     // TODO: Захват мира!
 
-    public class PortDriverRu : IFiscalRegistrarDevice, IDisposable
+    public class PortDriverRu : IFiscalRegistrarDevice
     {
         /// <summary>
         /// Драйвер
