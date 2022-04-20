@@ -271,7 +271,9 @@ public class AtolDto10Device : IFiscalRegistrarDevice
 
             if (ofdTaxCode > 0)
             {
-                WriteOfdAttribute((int)Enums.OfdAttributes.TaxSystem, ofdTaxCode);
+                var r = _driver.LIBFPTR_TT_USN_INCOME;
+
+                WriteOfdAttribute((int)Enums.OfdAttributes.TaxSystem, _driver.LIBFPTR_TT_USN_INCOME);
             }
 
             if (receipt.Contractor != null)
