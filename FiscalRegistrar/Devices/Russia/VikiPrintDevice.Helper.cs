@@ -43,7 +43,7 @@ public partial class VikiPrintDevice
     /// </summary>
     /// <returns></returns>
     [DllImport(PiritlibDllPath, EntryPoint = "closePort", CallingConvention = CallingConvention.StdCall)]
-    private static extern int LibClosePort();
+    private static extern int lib_ClosePort();
 
     /// <summary>
     /// Промежуточный итог
@@ -214,7 +214,7 @@ public partial class VikiPrintDevice
     /// </summary>
     /// <param name="typeOfPayment">Тип платежа</param>
     /// <param name="sum">Сумма</param>
-    /// <param name="comment">Коментарий</param>
+    /// <param name="comment">Комментарий</param>
     /// <returns></returns>
     [DllImport(PiritlibDllPath, EntryPoint = "libAddPayment")]
     private static extern int lib_addPayment(byte typeOfPayment, long sum, string comment);
@@ -626,17 +626,6 @@ public partial class VikiPrintDevice
 
 
     /// <summary>
-    /// Закрыть порт
-    /// </summary>
-    /// <returns></returns>
-    public static int ClosePort()
-    {
-        var r = LibClosePort();
-
-        return r;
-    }
-
-    /// <summary>
     /// Установка реквизита маркировки для ФФД ниже 1.2
     /// </summary>
     /// <param name="info"></param>
@@ -676,17 +665,7 @@ public partial class VikiPrintDevice
             ;
     }
 
-    /// <summary>
-    /// Добавить платеж
-    /// </summary>
-    /// <param name="method"></param>
-    /// <param name="sum"></param>
-    /// <returns></returns>
-    public static bool AddPayment(int method, decimal sum)
-    {
-        var r = lib_addPayment((byte)method, (int)(sum * 100), C1251To866(""));
-        return r == 0;
-    }
+ 
 
     /// <summary>
     /// Регистрация позиции
@@ -759,15 +738,6 @@ public partial class VikiPrintDevice
         return _resultCode;
     }
 
-    /// <summary>
-    /// Внесение/изъятие наличных
-    /// </summary>
-    /// <param name="sum"></param>
-    /// <returns></returns>
-    public static int CashInOut(decimal sum)
-    {
-        return lib_cashInOut("", (long)(sum * 100M));
-    }
 
   
 
