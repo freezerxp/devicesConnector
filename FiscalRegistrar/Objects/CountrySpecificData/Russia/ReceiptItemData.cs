@@ -48,7 +48,7 @@ public class ReceiptItemData
         /// <summary>
         /// Результат валидации кода маркирвоки 
         /// </summary>
-        public object ValidationResultKkm { get; set; }
+        public int ValidationResultKkm { get; set; }
 
         /// <summary>
         /// Полный код маркировки 
