@@ -47,8 +47,17 @@ public class KkmCommandsManager : ICommandManager
                 DoReport(kkm, hi);
                 break;
             case Enums.CommandTypes.PrintFiscalReceipt:
+                PrintFiscalReceipt(kkm, hi);
                 break;
         }
+    }
+
+    private static void PrintFiscalReceipt(FiscalRegistrarFacade kkm , CommandQueue cq)
+    {
+        var c = cq.Command.Deserialize<KkmPrintFiscalReceiptCommand>();
+        var a = () => kkm.PrintFiscalReceipt(c.ReceiptData);
+
+        SetResult(a, cq);
     }
 
     private static void CashInOut(FiscalRegistrarFacade kkm, CommandQueue cq)
