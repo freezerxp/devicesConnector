@@ -155,6 +155,8 @@ public class AtolDto10Device : IFiscalRegistrarDevice
         }
 
         _driver.operatorLogin();
+
+        CheckResult();
     }
 
     /// <summary>
@@ -169,6 +171,8 @@ public class AtolDto10Device : IFiscalRegistrarDevice
             return;
         }
 
+
+        Console.WriteLine($"n: {ofdAttributeNumber}; v: {value}");
         _driver.setParam(ofdAttributeNumber, value);
 
         CheckResult();
@@ -269,11 +273,15 @@ public class AtolDto10Device : IFiscalRegistrarDevice
 
             var ofdTaxCode = receipt.CountrySpecificData.Deserialize<Objects.CountrySpecificData.Russia.ReceiptData>()!.TaxVariantIndex;
 
+           
+
             if (ofdTaxCode > 0)
             {
-                var r = _driver.LIBFPTR_TT_USN_INCOME;
 
-                WriteOfdAttribute((int)Enums.OfdAttributes.TaxSystem, _driver.LIBFPTR_TT_USN_INCOME);
+                WriteOfdAttribute((int)Enums.OfdAttributes.TaxSystem, ofdTaxCode);
+
+               
+
             }
 
             if (receipt.Contractor != null)

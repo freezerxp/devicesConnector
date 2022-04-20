@@ -462,7 +462,7 @@ public partial class VikiPrintDevice
     /// </summary>
     /// <param name="cashier"></param>
     /// <returns></returns>
-    private static string PrepareCashierNameAndInn(Cashier cashier)
+    private string PrepareCashierNameAndInn(Cashier cashier)
     {
         var ffdV = _deviceConfig.DeviceSpecificConfig.Deserialize<KkmConfig>()?.FfdVersion;
 
