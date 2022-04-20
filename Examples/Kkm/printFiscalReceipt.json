@@ -1,6 +1,6 @@
 {
   "CommandType": 5,
-  "DeviceId": "f72b4df8-ae14-45ac-a024-70bc4c123339",
+  "DeviceId": "e4bfd416-8d2f-41ab-9475-2e99208bc330",
   "ReceiptData": {
     "FiscalType": "Fiscal",
     "OperationType": "Sale",
@@ -44,9 +44,9 @@
       }
     ],
     "CountrySpecificData": {
-      "TaxVariantIndex": 1
+      "TaxVariantIndex": 1,
+      "FfdVersion": 4
     }
   }
 
 }
-
