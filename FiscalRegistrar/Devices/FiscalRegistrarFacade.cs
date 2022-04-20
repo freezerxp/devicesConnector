@@ -88,6 +88,7 @@ public class FiscalRegistrarFacade:IDisposable
 
     public void PrintFiscalReceipt(ReceiptData receipt)
     {
+        
         //todo: проверка ККМ на готовность
 
         //открываем чек

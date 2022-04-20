@@ -30,7 +30,7 @@ public class KkmCommandsManager : ICommandManager
 
         var d = GetDeviceById(deviceCommand.DeviceId);
 
-        var kkm = new FiscalRegistrarFacade(d);
+        using var kkm = new FiscalRegistrarFacade(d);
 
         switch (commandType)
         {
