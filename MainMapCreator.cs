@@ -56,18 +56,27 @@ public class MainMapCreator : IMapCreator
         //получение результатов выполнения команды
         app.MapGet("/getResult/{commandId}/",   (string commandId) =>
         {
-
-            var qr = new CommandsQueueRepository();
+            try
+            {
+                var qr = new CommandsQueueRepository();
 
          
-            var ch = qr.GetCommandState(commandId);
+                var ch = qr.GetCommandState(commandId);
 
-            return Results.Ok(new Answer(ch.Status, ch.Result)
-                {
-                    CommandId = commandId,
-                    DeviceId = ch.Command.Deserialize<DeviceCommand>()?.DeviceId
-                }
-            );
+                return Results.Ok(new Answer(ch.Status, ch.Result)
+                    {
+                        CommandId = commandId,
+                        DeviceId = ch.Command.Deserialize<DeviceCommand>()?.DeviceId
+                    }
+                );
+            }
+            catch (Exception e)
+            {
+                return Results.BadRequest(new Answer(Answer.Statuses.Error, new ErrorObject(e) ) );
+                
+            }
+
+            
 
         });
 
