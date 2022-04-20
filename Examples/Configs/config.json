@@ -25,6 +25,9 @@
         "ComPort": {
           "PortName": "COM4"
         }
+      },
+      "DeviceSpecificConfig": {
+        "FfdVersion": 4
       }
     },
     {
