@@ -27,6 +27,11 @@ public class CommandsQueueRepository
     public class CommandQueue
     {
         /// <summary>
+        /// ИД команды
+        /// </summary>
+        public string CommandId { get; set; }
+
+        /// <summary>
         /// Команда
         /// </summary>
         public JsonNode Command { get; set; }
@@ -56,10 +61,12 @@ public class CommandsQueueRepository
 
         var cq = new CommandQueue
         {
+            CommandId = command.Deserialize<DeviceCommand>()?.CommandId ?? Guid.NewGuid().ToString(),
             Command = command,
             Status = Answer.Statuses.Wait
         };
 
+       
         //добавляем в очередь и историю
         CommandsHistory.Add(cq);
         CommandsQueue.Enqueue(cq);
@@ -72,7 +79,14 @@ public class CommandsQueueRepository
     /// <returns></returns>
     public CommandQueue GetCommandState(string commandId)
     {
-        return CommandsHistory.Single(x => x.Command.Deserialize<DeviceCommand>()?.CommandId == commandId);
+        var ch= CommandsHistory.SingleOrDefault(x => x.CommandId == commandId);
+
+        if(ch == null)
+        {
+            throw new NullReferenceException($"Команда с {commandId} не найдена");
+        }
+
+        return ch;
     }
 
     /// <summary>
