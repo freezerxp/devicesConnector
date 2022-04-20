@@ -369,8 +369,15 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
         }
 
         //todo: разбор кодов ошибок
+        var errType = resultCode switch
+        {
+            10 => Enums.ErrorTypes.SessionMore24Hour,
+            _ => Enums.ErrorTypes.Unknown
+        };
 
-        var ex = new KkmException(string.Empty, Enums.ErrorTypes.Unknown, resultCode, string.Empty);
+    
+
+        var ex = new KkmException(string.Empty, errType, resultCode, string.Empty);
 
         throw ex;
     }
