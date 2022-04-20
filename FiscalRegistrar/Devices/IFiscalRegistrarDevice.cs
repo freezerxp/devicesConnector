@@ -36,7 +36,12 @@ public interface IFiscalRegistrarDevice: IDevice, IDisposable
     /// <summary>
     /// Закрытие чека
     /// </summary>
-    public void CloseReceipt ();
+    public void CloseReceipt();
+
+    /// <summary>
+    /// Отмена чека
+    /// </summary>
+    public void CancelReceipt();
 
     /// <summary>
     /// Регистрация позиции в чеке

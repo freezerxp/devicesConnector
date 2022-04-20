@@ -8,7 +8,7 @@ namespace devicesConnector.FiscalRegistrar.Devices.Russia;
 
 public partial class VikiPrintDevice : IFiscalRegistrarDevice
 {
-    private Device _deviceConfig;
+    private readonly Device _deviceConfig;
 
     public VikiPrintDevice(Device device)
     {
@@ -117,7 +117,6 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
 
     public void OpenReceipt(ReceiptData? receipt)
     {
-
         if (receipt == null)
         {
             throw new NullReferenceException();
@@ -150,32 +149,48 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
         //var r = SetPrintCheck(dc.CheckPrinter.FiscalKkm.IsAlwaysNoPrintCheck ? 129 : 1);
         //CheckResult(r);
 
-        var taxIndex = receipt.CountrySpecificData.Deserialize<Objects.CountrySpecificData.Russia.ReceiptData>()?.TaxVariantIndex ?? 0;
+        var taxIndex = receipt.CountrySpecificData.Deserialize<Objects.CountrySpecificData.Russia.ReceiptData>()
+            ?.TaxVariantIndex ?? 0;
 
-        var r = OpenDocument(docType, 1, cashierName, taxIndex);
-
+        var openDocResult = OpenDocument(docType, 1, cashierName, taxIndex);
+        CheckResult(openDocResult);
 
         //todo
-        //if (receipt.FiscalType == Enums.ReceiptFiscalTypes.Fiscal)
-        //{
+        if (receipt.FiscalType == Enums.ReceiptFiscalTypes.Fiscal)
+        {
+            var digitalReceiptAddress = receipt
+                .CountrySpecificData
+                .Deserialize<Objects.CountrySpecificData.Russia.ReceiptData>()?
+                .DigitalReceiptAddress;
+
+            if (digitalReceiptAddress?.IsNullOrEmpty() == false)
+            {
+                var setClientAddressResult = lib_setClientAddress(digitalReceiptAddress);
+
+                CheckResult(setClientAddressResult);
+            }
 
 
-        //    SendDigitalCheck(checkData.AddressForDigitalCheck);
+            //похоже надо оплачивать это
+            // SetClientNameInn(checkData.Client);
+        }
 
-        //    //похоже надо оплачивать это
-        //    // SetClientNameInn(checkData.Client);
-        //}
-
-        //CheckResult(r);
-
+        
+        //todo: маркировка
         //if (dc.CheckPrinter.FiscalKkm.FfdVersion == GlobalDictionaries.Devices.FfdVersions.Ffd120)
         //{
         //    Ffd120CodeValidation(checkData);
         //}
-
     }
 
     public void CloseReceipt()
+    {
+        var r = CloseDocument();
+
+        CheckResult(r);
+    }
+
+    public void CancelReceipt()
     {
         throw new NotImplementedException();
     }
@@ -220,7 +235,7 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
     }
 
 
-    private void CheckResult(int resultCode)
+    private  void CheckResult( int resultCode)
     {
         if (resultCode == 0)
         {

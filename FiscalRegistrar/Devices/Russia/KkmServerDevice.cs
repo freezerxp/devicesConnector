@@ -165,6 +165,11 @@ public class KkmServerDevice : IFiscalRegistrarDevice
         
     }
 
+    public void CancelReceipt()
+    {
+        throw new NotImplementedException();
+    }
+
     public void RegisterItem(ReceiptItem item)
     {
 

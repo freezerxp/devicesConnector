@@ -345,6 +345,11 @@ public class AtolDto10Device : IFiscalRegistrarDevice
         CheckResult();
     }
 
+    public void CancelReceipt()
+    {
+        throw new NotImplementedException();
+    }
+
     public void RegisterItem(ReceiptItem item)
     {
         LogHelper.Write("ККМ АТОЛ регистрация позиции");

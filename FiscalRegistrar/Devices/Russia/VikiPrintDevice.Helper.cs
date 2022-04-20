@@ -487,6 +487,58 @@ public partial class VikiPrintDevice
     }
 
 
+    private void SendDigitalCheck(string address)
+    {
+        if (address.IsNullOrEmpty())
+        {
+            return;
+        }
+
+
+        var r = lib_setClientAddress(address);
+
+
+        CheckResult(r);
+
+
+        //включение/отключение печати чека
+        //if ()
+        //{
+        //    r = Driver.SetPrintCheck(129);
+        //    CheckResult(r);
+        //}
+    }
+
+    //private void Ffd120CodeValidation(CheckData.CheckData checkData)
+    //{
+
+      
+
+    //    foreach (var item in checkData.GoodsList
+    //                 .Where(item => item.RuMarkedInfo != null && !item.RuMarkedInfo.FullCode.IsNullOrEmpty()))
+    //    {
+
+    //        //обнуляю результат
+    //        item.RuMarkedInfo.ValidationResultKkm = 0;
+
+    //        var fullCode = PrepareMarkCodeForFfd120(item.RuMarkedInfo.FullCode);
+    //        var status = RuOnlineKkmHelper.GetMarkingCodeStatus(item, checkData.CheckType);
+
+
+
+    //        var r = MarkCodeValidation(out var validationResultKkm, fullCode, item.Quantity, status, item.Unit.RuFfdUnitsIndex);
+    //        //CheckResult(r);
+
+
+    //        item.RuMarkedInfo.ValidationResultKkm = validationResultKkm;
+
+
+
+    //        AcceptMarkingCode();
+    //    }
+    //}
+
+
 
 
 
@@ -819,18 +871,18 @@ public partial class VikiPrintDevice
     /// </summary>
     /// <param name="docType"></param>
     /// <param name="section"></param>
-    /// <param name="userName"></param>
+    /// <param name="cashierName"></param>
     /// <param name="taxSystem"></param>
     /// <returns></returns>
-    public static int OpenDocument(DocTypes docType, int section, string userName,
+    public static int OpenDocument(DocTypes docType, int section, string cashierName,
        int taxSystem = 0)
     {
         if (taxSystem == 0)
         {
-            return Lib_openDocument((int)docType, section, C1251To866(userName));
+            return Lib_openDocument((int)docType, section, cashierName);
         }
 
-        return lib_openDocumentEx((int)docType, section, C1251To866(userName), 0,
+        return lib_openDocumentEx((int)docType, section, cashierName, 0,
             (int)taxSystem);
     }
 

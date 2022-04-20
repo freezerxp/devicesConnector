@@ -165,6 +165,11 @@ namespace devicesConnector.FiscalRegistrar.Devices.Russia
             CheckResult();
         }
 
+        public void CancelReceipt()
+        {
+            throw new NotImplementedException();
+        }
+
         public void RegisterItem(ReceiptItem item)
         {
             RegisterSale(item);
