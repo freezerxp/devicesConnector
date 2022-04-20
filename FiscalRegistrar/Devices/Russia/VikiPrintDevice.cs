@@ -51,12 +51,10 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
             status.SessionNumber = int.TryParse(sessionNumber, out var n) ? n : 1;
         }
 
-
         if (GetInfo(2, RequestType.CounterAndRegisters, out var a))
         {
             status.CheckNumber = int.TryParse(a, out var n) ? n : 1;
         }
-
 
         if (GetInfo(1, RequestType.KkmInfo, out var factoryNumber))
         {
@@ -83,7 +81,6 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
             status.FnDateEnd = GetDateTimeFromString(fnEnd);
         }
 
-
         if (GetCashSum(out var cashSum))
         {
             status.CashSum = cashSum;
@@ -104,7 +101,6 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
     {
         var cashierName = PrepareCashierNameAndInn(cashier);
 
-
         var result = type switch
         {
             Enums.ReportTypes.ZReport => lib_zReport(cashierName),
@@ -122,7 +118,6 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
         {
             throw new NullReferenceException();
         }
-
 
         var cashierName = receipt.Cashier.Name;
 
@@ -156,7 +151,7 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
         var openDocResult = OpenDocument(docType, 1, cashierName, taxIndex);
         CheckResult(openDocResult);
 
-        //todo
+
         if (receipt.FiscalType == Enums.ReceiptFiscalTypes.Fiscal)
         {
             var digitalReceiptAddress = receipt
@@ -200,11 +195,9 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
 
     public void RegisterItem(ReceiptItem item)
     {
-
         var ffdV = _deviceConfig
             .DeviceSpecificConfig.Deserialize<KkmConfig>()?
             .FfdVersion;
-
 
         switch (ffdV)
         {
@@ -230,6 +223,71 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
         }
     }
 
+    public void RegisterPayment(ReceiptPayment payment)
+    {
+        var r = lib_addPayment((byte) payment.MethodIndex, (int) (payment.Sum * 100), C1251To866(""));
+        CheckResult(r);
+    }
+
+    public void PrintText(string text)
+    {
+        //throw new NotImplementedException();
+    }
+
+    public void Connect()
+    {
+        if (File.Exists(PiritlibDllPath) == false)
+        {
+            throw new FileNotFoundException();
+        }
+
+
+        var comPort = _deviceConfig.Connection.ComPort;
+
+        if (comPort == null)
+        {
+            throw new NullReferenceException();
+        }
+
+        var openPortResult = lib_OpenPort(
+            comPort.PortName,
+            comPort.Speed);
+
+        CheckResult(openPortResult);
+
+        if (IsNeedInitialization())
+        {
+            var initResult = KkmInitialization();
+            CheckResult(initResult);
+        }
+    }
+
+    public void Disconnect()
+    {
+        //todo: проверять,что соединение было установлено
+
+
+        var r = lib_ClosePort();
+
+        CheckResult(r);
+    }
+
+    public void CashIn(decimal sum, Cashier cashier)
+    {
+        CashInOut(sum, cashier);
+    }
+
+    public void CashOut(decimal sum, Cashier cashier)
+    {
+        CashInOut(-sum, cashier);
+    }
+
+
+    public void Dispose()
+    {
+        Disconnect();
+    }
+
     /// <summary>
     /// Регистрация позиции по ФФД 1.2
     /// </summary>
@@ -248,13 +306,13 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
         //        (int)good.RuMarkedInfo.ValidationResultKkm);
         //    CheckResult(res);
         //}
+
         var ruData = item.CountrySpecificData.Deserialize<ReceiptItemData>();
 
         if (ruData == null)
         {
             throw new NullReferenceException();
         }
-
 
         var q = ((int) ruData.FfdData.Unit).ToString("N0");
 
@@ -302,42 +360,6 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
         CheckResult(res);
     }
 
-    public void RegisterPayment(ReceiptPayment payment)
-    {
-        var r = lib_addPayment((byte) payment.MethodIndex, (int) (payment.Sum * 100), C1251To866(""));
-        CheckResult(r);
-    }
-
-    public void PrintText(string text)
-    {
-        //throw new NotImplementedException();
-    }
-
-
-    public void Connect()
-    {
-        if (File.Exists(PiritlibDllPath) == false)
-        {
-            throw new FileNotFoundException();
-        }
-
-        if (_deviceConfig.Connection.ComPort == null)
-        {
-            throw new NullReferenceException();
-        }
-
-        var openPortResult =
-            lib_OpenPort(_deviceConfig.Connection.ComPort.PortName, _deviceConfig.Connection.ComPort.Speed);
-
-        CheckResult(openPortResult);
-
-        if (IsNeedInitialization())
-        {
-            var initResult = KkmInitialization();
-            CheckResult(initResult);
-        }
-    }
-
 
     private void CheckResult(int resultCode)
     {
@@ -346,31 +368,11 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
             return; //успешно выполнено
         }
 
+        //todo: разбор кодов ошибок
 
         var ex = new KkmException(string.Empty, Enums.ErrorTypes.Unknown, resultCode, string.Empty);
 
-
         throw ex;
-    }
-
-    public void Disconnect()
-    {
-        //todo: проверять,что соединение было установлено
-
-
-        var r = lib_ClosePort();
-
-        CheckResult(r);
-    }
-
-    public void CashIn(decimal sum, Cashier cashier)
-    {
-        CashInOut(sum, cashier);
-    }
-
-    public void CashOut(decimal sum, Cashier cashier)
-    {
-        CashInOut(-sum, cashier);
     }
 
     private void CashInOut(decimal sum, Cashier cashier)
@@ -390,12 +392,5 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
         var closeDocResult = CloseDocument();
 
         CheckResult(closeDocResult);
-    }
-
-
-    public void Dispose()
-    {
-
-        Disconnect();
     }
 }

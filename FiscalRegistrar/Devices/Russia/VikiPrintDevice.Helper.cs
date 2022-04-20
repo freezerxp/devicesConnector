@@ -10,8 +10,518 @@ namespace devicesConnector.FiscalRegistrar.Devices.Russia;
 
 public partial class VikiPrintDevice
 {
+    /// <summary>
+    /// Типы документов
+    /// </summary>
+    public enum DocTypes
+    {
+        /// <summary>
+        /// Сервисный (нефискальный)
+        /// </summary>
+        Service = 1,
+
+        /// <summary>
+        /// Продажа
+        /// </summary>
+        SaleCheck,
+
+        /// <summary>
+        /// Возврат
+        /// </summary>
+        ReturnCheck,
+
+        /// <summary>
+        /// Внесение
+        /// </summary>
+        CashIncome,
+
+        /// <summary>
+        /// Изъятие
+        /// </summary>
+        CashOutcome
+    }
 
 
+    public enum RequestType
+    {
+        CounterAndRegisters,
+
+        KkmInfo
+    }
+
+    /// <summary>
+    /// Преобразование строки в дату
+    /// </summary>
+    /// <param name="str">Строка дата/время</param>
+    /// <returns></returns>
+    public static DateTime GetDateTimeFromString(string str)
+    {
+        var df = @".ddMMyy.HHmmss";
+
+        if (str.Length == 7)
+        {
+            df = @".ddMMyy";
+        }
+
+
+        if (!DateTime.TryParseExact(str, df, CultureInfo.InvariantCulture,
+                DateTimeStyles.None, out var date))
+        {
+            return date;
+        }
+
+        if (date.Year < 2000)
+        {
+            date = date.AddYears(2000);
+        }
+
+        //var date = DateTime.ParseExact(str, "dd.MM.yy.HH.mm.ss", System.Globalization.CultureInfo.InvariantCulture);
+
+
+        return date;
+    }
+
+    /// <summary>
+    /// Подготовка ФИО + ИНН кассира
+    /// (с преобразованием кодировки 1251 -> 866
+    /// </summary>
+    /// <param name="cashier"></param>
+    /// <returns></returns>
+    private string PrepareCashierNameAndInn(Cashier cashier)
+    {
+        var ffdV = _deviceConfig.DeviceSpecificConfig.Deserialize<KkmConfig>()?.FfdVersion;
+
+
+        string result;
+
+        if (cashier.TaxId is {Length: >= 10} && ffdV > Enums.FFdVersions.Ffd100)
+        {
+            result = cashier.TaxId + @"&" + cashier.Name;
+        }
+        else
+        {
+            result = cashier.Name;
+        }
+
+        result = C1251To866(result);
+
+        return result;
+    }
+
+
+    private void SendDigitalCheck(string address)
+    {
+        if (address.IsNullOrEmpty())
+        {
+            return;
+        }
+
+
+        var r = lib_setClientAddress(address);
+
+
+        CheckResult(r);
+
+
+        //включение/отключение печати чека
+        //if ()
+        //{
+        //    r = Driver.SetPrintCheck(129);
+        //    CheckResult(r);
+        //}
+    }
+
+    //private void Ffd120CodeValidation(CheckData.CheckData checkData)
+    //{
+
+
+    //    foreach (var item in checkData.GoodsList
+    //                 .Where(item => item.RuMarkedInfo != null && !item.RuMarkedInfo.FullCode.IsNullOrEmpty()))
+    //    {
+
+    //        //обнуляю результат
+    //        item.RuMarkedInfo.ValidationResultKkm = 0;
+
+    //        var fullCode = PrepareMarkCodeForFfd120(item.RuMarkedInfo.FullCode);
+    //        var status = RuOnlineKkmHelper.GetMarkingCodeStatus(item, checkData.CheckType);
+
+
+    //        var r = MarkCodeValidation(out var validationResultKkm, fullCode, item.Quantity, status, item.Unit.RuFfdUnitsIndex);
+    //        //CheckResult(r);
+
+
+    //        item.RuMarkedInfo.ValidationResultKkm = validationResultKkm;
+
+
+    //        AcceptMarkingCode();
+    //    }
+    //}
+
+
+    /// <summary>
+    /// Получить информацию из ККМ
+    /// </summary>
+    /// <param name="requestNumber">Номер запроса</param>
+    /// <param name="type">Тип запроса</param>
+    /// <param name="answer">Ответ</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    public static bool GetInfo(ushort requestNumber, RequestType type, out string answer)
+    {
+        var ans = new MData();
+
+
+        switch (type)
+        {
+            case RequestType.CounterAndRegisters:
+                lib_getCountersAndRegisters(ref ans, requestNumber);
+
+                break;
+            case RequestType.KkmInfo:
+                lib_getKktInfo(ref ans, requestNumber);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(type), type, null);
+        }
+
+
+        if (ans.errCode == 0)
+        {
+            answer = DataToString(ans);
+            LogHelper.Write($"answer: {answer}; errorCode: {ans.errCode}");
+            return true;
+        }
+
+        answer = string.Empty;
+        return false;
+    }
+
+    /// <summary>
+    /// Получить список статусов
+    /// </summary>
+    /// <param name="fatalStatus">Фатальный статус</param>
+    /// <param name="currentStatus">Текущий статус</param>
+    /// <param name="documentStatus">Статус документа</param>
+    /// <returns></returns>
+    public static int GetListOfStatuses(out int[] fatalStatus, out int[] currentStatus,
+        out int[] documentStatus)
+    {
+        var errCode = getStatusFlags(out var fatalS, out var curS, out var docS);
+
+        fatalStatus = fatalS.ToBitsArray();
+        currentStatus = curS.ToBitsArray(9);
+
+        var docString = Convert.ToString(docS, 2)
+            .PadLeft(8, '0');
+
+        documentStatus = new[]
+        {
+            ConvertFromBinary(docString.Substring(4, 4)),
+            ConvertFromBinary(docString.Substring(0, 4))
+        };
+
+
+        return errCode;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="input"></param>
+    /// <returns></returns>
+    private static int ConvertFromBinary(string input)
+    {
+        return Convert.ToInt32(input, 2);
+    }
+
+
+    /// <summary>
+    /// Установка реквизита маркировки для ФФД ниже 1.2
+    /// </summary>
+    /// <param name="info"></param>
+    /// <returns></returns>
+    public static bool SetMarkedRequisite(ReceiptItemData.RuMarkingInfo info)
+    {
+        throw new NotSupportedException();
+
+        //var hex = info.GetHexStringAttribute();
+
+        //var l = hex.Split(@" ".ToCharArray()[0]);
+
+        //var newHexStr = string.Empty;
+
+        //foreach (var s in l)
+        //{
+        //    newHexStr += @"$" + s.ToUpper();
+        //}
+
+
+        //var r = libSetExtraRequisite(newHexStr);
+        //return r == 0;
+    }
+
+
+    /// <summary>
+    /// Напечатать нефискальную строку
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns></returns>
+    public static int PrintString(string text)
+    {
+        var r = lib_printString(C1251To866(text), 1);
+        //LogHelper.Debug("Код результата печати строки: " + _resultCode);
+        return r
+            ;
+    }
+
+
+
+
+    /// <summary>
+    /// Регистрация позиции
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="barcode"></param>
+    /// <param name="quantity"></param>
+    /// <param name="price"></param>
+    /// <param name="taxRateNumber"></param>
+    /// <param name="sectionNumber"></param>
+    /// <param name="ffdPaymentMode"></param>
+    /// <param name="ffdGoodType"></param>
+    /// <returns></returns>
+    public static int AddPosition(string name, string barcode, decimal quantity, decimal price,
+        int taxRateNumber, int sectionNumber, int ffdPaymentMode,
+        int ffdGoodType)
+    {
+        var _resultCode = lib_addPositionEx(C1251To866(name), barcode, (double) quantity, (double) price,
+            (byte) taxRateNumber, 0, (byte) sectionNumber,
+            ffdPaymentMode, ffdGoodType);
+
+
+        return _resultCode;
+    }
+
+
+    /// <summary>
+    /// Получить сумму наличности
+    /// </summary>
+    /// <param name="sum"></param>
+    /// <returns></returns>
+    public static bool GetCashSum(out decimal sum)
+    {
+        var ans = new MData();
+
+        lib_getKktInfo(ref ans, 7);
+
+        var resultCode = ans.errCode;
+
+        if (resultCode != 0)
+        {
+            sum = 0;
+            return false;
+        }
+
+        var strAns = DataToString(ans).Replace(@".", "");
+
+        int.TryParse(strAns, out var kkmSum);
+        sum = kkmSum / 100M;
+        return true;
+    }
+
+
+    private static Encoding CP866()
+    {
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        var enc = Encoding.GetEncoding(866);
+
+        return enc;
+    }
+
+    /// <summary>
+    /// Преобразование в строку
+    /// </summary>
+    /// <param name="data"></param>
+    /// <returns></returns>
+    private static string DataToString(MData data)
+    {
+        try
+        {
+            var newB2 = new List<byte>();
+
+
+            for (var i = 8; i <= data.dataLength - 5; i++)
+            {
+                if (data.data[i] >= 32)
+                {
+                    newB2.Add(data.data[i]);
+                }
+
+                if (data.data[i] == 28)
+                {
+                    newB2.Add(46);
+                }
+            }
+
+
+            var r = CP866().GetString(newB2.ToArray());
+
+
+            return r;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return string.Empty;
+        }
+    }
+
+    /// <summary>
+    /// Конвертация кодировки строки
+    /// </summary>
+    /// <param name="str1251"></param>
+    /// <returns></returns>
+    private static string C1251To866(string str1251)
+    {
+        var bytes = CP866().GetBytes(str1251);
+        var newBytes = Encoding.Convert(Encoding.GetEncoding(866), CP866(), bytes);
+        return Encoding.GetEncoding(1251).GetString(newBytes);
+    }
+
+    /// <summary>
+    /// Открыть документ
+    /// </summary>
+    /// <param name="docType"></param>
+    /// <param name="section"></param>
+    /// <param name="cashierName"></param>
+    /// <param name="taxSystem"></param>
+    /// <returns></returns>
+    public static int OpenDocument(DocTypes docType, int section, string cashierName,
+        int taxSystem = 0)
+    {
+        if (taxSystem == 0)
+        {
+            return Lib_openDocument((int) docType, section, cashierName);
+        }
+
+        return lib_openDocumentEx((int) docType, section, cashierName, 0,
+            taxSystem);
+    }
+
+    public static int CloseDocument()
+    {
+        var ans = new MData();
+        lib_closeDocument(ref ans, 0);
+
+        return ans.errCode;
+    }
+
+
+    public static int MarkCodeValidation(out int result, string fullCode, decimal q, int itemState, int unit,
+        string qFractional = "")
+    {
+        var ans = new MData();
+        result = 0;
+        var qStr = q.ToString(CultureInfo.InvariantCulture);
+        lib_MarkCodeValidation(ref ans, C1251To866(fullCode), qStr, itemState, unit);
+        var rs = DataToString(ans);
+
+        if (rs.IsNullOrEmpty() == false)
+        {
+            var arr = rs.Split('.');
+
+            if (arr.Any() && int.TryParse(arr[0], out var num))
+            {
+                result = num;
+            }
+        }
+
+        return ans.errCode;
+    }
+
+    public static int AcceptMarkingCode()
+    {
+        var ans = new MData();
+
+        var r = lib_ConfirmMarkCode(ref ans);
+
+        return ans.errCode;
+    }
+
+    public static int AddItemMarkingCode(string fullCode, int itemState, int unit, int validResult)
+    {
+        var r = lib_AddMarkCode(fullCode, itemState, unit, validResult);
+
+        return r;
+    }
+
+    public static int KkmInitialization()
+    {
+        var r = lib_commandStart();
+
+
+        return r;
+    }
+
+    public static int SetClientAddress(string address)
+    {
+        if (address.IsNullOrEmpty())
+        {
+            return 0;
+        }
+
+        var r = lib_setClientAddress(address);
+        return r;
+    }
+
+    public static bool SetClientInn(string inn)
+    {
+        if (inn.IsNullOrEmpty())
+        {
+            return true;
+        }
+
+        var r = lib_SetBuyerInn(inn);
+        return r == 0;
+    }
+
+    public static bool SetClientName(string name)
+    {
+        if (name.IsNullOrEmpty())
+        {
+            return true;
+        }
+
+        var r = lib_SetBuyerInn(name);
+        return r == 0;
+    }
+
+    public static int SetPrintCheck(int i)
+    {
+        var r = lib_WriteSettingsTable(1, 7, $"{i}");
+        return r;
+    }
+
+
+    private bool IsNeedInitialization()
+    {
+        var los = GetListOfStatuses(out var fatal, out var current, out var document);
+
+        CheckResult(los);
+
+        return current[0] == '1';
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MData
+    {
+        // unsafe
+        public int errCode;
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 256)]
+        public byte[] data;
+
+        public int dataLength;
+    }
 
 
     #region DllImports
@@ -393,586 +903,4 @@ public partial class VikiPrintDevice
         string payAgentPhone = "", string recOperatorPhone = "");
 
     #endregion
-
-    /// <summary>
-    /// Типы документов
-    /// </summary>
-    public enum DocTypes
-    {
-        /// <summary>
-        /// Сервисный (нефискальный)
-        /// </summary>
-        Service = 1,
-
-        /// <summary>
-        /// Продажа
-        /// </summary>
-        SaleCheck,
-
-        /// <summary>
-        /// Возврат
-        /// </summary>
-        ReturnCheck,
-
-        /// <summary>
-        /// Внесение
-        /// </summary>
-        CashIncome,
-
-        /// <summary>
-        /// Изъятие
-        /// </summary>
-        CashOutcome
-    }
-
-    /// <summary>
-    /// Преобразование строки в дату
-    /// </summary>
-    /// <param name="str">Строка дата/время</param>
-    /// <returns></returns>
-    public static DateTime GetDateTimeFromString(string str)
-    {
-        var df = @".ddMMyy.HHmmss";
-
-        if (str.Length == 7)
-        {
-            df = @".ddMMyy";
-        }
-
-
-        if (!DateTime.TryParseExact(str, df, System.Globalization.CultureInfo.InvariantCulture,
-                DateTimeStyles.None, out var date))
-        {
-            return date;
-        }
-
-        if (date.Year < 2000)
-        {
-            date = date.AddYears(2000);
-        }
-
-        //var date = DateTime.ParseExact(str, "dd.MM.yy.HH.mm.ss", System.Globalization.CultureInfo.InvariantCulture);
-
-
-        return date;
-    }
-
-    /// <summary>
-    /// Подготовка ФИО + ИНН кассира
-    /// (с преобразованием кодировки 1251 -> 866
-    /// </summary>
-    /// <param name="cashier"></param>
-    /// <returns></returns>
-    private  string PrepareCashierNameAndInn(Cashier cashier)
-    {
-        var ffdV = _deviceConfig.DeviceSpecificConfig.Deserialize<KkmConfig>()?.FfdVersion;
-
-
-        string result;
-
-        if (cashier.TaxId is {Length: >= 10} && ffdV > Enums.FFdVersions.Ffd100)
-        {
-            result =  cashier.TaxId + @"&" + cashier.Name;
-        }
-        else
-        {
-            result = cashier.Name;
-        }
-
-        result = C1251To866(result);
-
-        return result;
-
-
-    }
-
-
-    private void SendDigitalCheck(string address)
-    {
-        if (address.IsNullOrEmpty())
-        {
-            return;
-        }
-
-
-        var r = lib_setClientAddress(address);
-
-
-        CheckResult(r);
-
-
-        //включение/отключение печати чека
-        //if ()
-        //{
-        //    r = Driver.SetPrintCheck(129);
-        //    CheckResult(r);
-        //}
-    }
-
-    //private void Ffd120CodeValidation(CheckData.CheckData checkData)
-    //{
-
-      
-
-    //    foreach (var item in checkData.GoodsList
-    //                 .Where(item => item.RuMarkedInfo != null && !item.RuMarkedInfo.FullCode.IsNullOrEmpty()))
-    //    {
-
-    //        //обнуляю результат
-    //        item.RuMarkedInfo.ValidationResultKkm = 0;
-
-    //        var fullCode = PrepareMarkCodeForFfd120(item.RuMarkedInfo.FullCode);
-    //        var status = RuOnlineKkmHelper.GetMarkingCodeStatus(item, checkData.CheckType);
-
-
-
-    //        var r = MarkCodeValidation(out var validationResultKkm, fullCode, item.Quantity, status, item.Unit.RuFfdUnitsIndex);
-    //        //CheckResult(r);
-
-
-    //        item.RuMarkedInfo.ValidationResultKkm = validationResultKkm;
-
-
-
-    //        AcceptMarkingCode();
-    //    }
-    //}
-
-
-
-
-
-    /// <summary>
-    /// Получить информацию из ККМ
-    /// </summary>
-    /// <param name="requestNumber">Номер запроса</param>
-    /// <param name="type">Тип запроса</param>
-    /// <param name="answer">Ответ</param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public static bool GetInfo(ushort requestNumber, RequestType type, out string answer)
-    {
-        var ans = new MData();
-
-        
-
-        switch (type)
-        {
-            case RequestType.CounterAndRegisters:
-               lib_getCountersAndRegisters(ref ans, requestNumber);
-
-                break;
-            case RequestType.KkmInfo:
-                 lib_getKktInfo(ref ans, requestNumber);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(type), type, null);
-        }
-
-        
-
-
-        if (ans.errCode == 0)
-        {
-            answer = DataToString(ans);
-            LogHelper.Write($"answer: {answer}; errorCode: {ans.errCode}");
-            return true;
-        }
-
-        answer = string.Empty;
-        return false;
-    }
-
-    /// <summary>
-    /// Получить список статусов
-    /// </summary>
-    /// <param name="fatalStatus">Фатальный статус</param>
-    /// <param name="currentStatus">Текущий статус</param>
-    /// <param name="documentStatus">Статус документа</param>
-    /// <returns></returns>
-    public static int GetListOfStatuses(out int[] fatalStatus, out int[] currentStatus,
-        out int[] documentStatus)
-    {
-        var errCode = getStatusFlags(out var fatalS, out var curS, out var docS);
-
-        fatalStatus = fatalS.ToBitsArray();
-        currentStatus =curS.ToBitsArray(9);
-
-        var docString = Convert.ToString(docS, 2)
-            .PadLeft(8, '0');
-
-        documentStatus = new[]
-        {
-            ConvertFromBinary(docString.Substring(4, 4)),
-            ConvertFromBinary(docString.Substring(0, 4))
-        };
-
-
-
-        return errCode;
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="input"></param>
-    /// <returns></returns>
-    private static int ConvertFromBinary(string input)
-    {
-        return Convert.ToInt32(input, 2);
-    }
-
-  
-
-
-    /// <summary>
-    /// Установка реквизита маркировки для ФФД ниже 1.2
-    /// </summary>
-    /// <param name="info"></param>
-    /// <returns></returns>
-    public static bool SetMarkedRequisite(ReceiptItemData.RuMarkingInfo info)
-    {
-        throw new NotSupportedException();
-
-        //var hex = info.GetHexStringAttribute();
-
-        //var l = hex.Split(@" ".ToCharArray()[0]);
-
-        //var newHexStr = string.Empty;
-
-        //foreach (var s in l)
-        //{
-        //    newHexStr += @"$" + s.ToUpper();
-        //}
-
-
-        //var r = libSetExtraRequisite(newHexStr);
-        //return r == 0;
-    }
-
-
-
-    /// <summary>
-    /// Напечатать нефискальную строку
-    /// </summary>
-    /// <param name="text"></param>
-    /// <returns></returns>
-    public static int PrintString(string text)
-    {
-        var r = lib_printString(C1251To866(text), 1);
-        //LogHelper.Debug("Код результата печати строки: " + _resultCode);
-        return r
-            ;
-    }
-
- 
-
-    /// <summary>
-    /// Регистрация позиции
-    /// </summary>
-    /// <param name="name"></param>
-    /// <param name="barcode"></param>
-    /// <param name="quantity"></param>
-    /// <param name="price"></param>
-    /// <param name="taxRateNumber"></param>
-    /// <param name="sectionNumber"></param>
-    /// <returns></returns>
-    public static int AddPosition(string name, string barcode, decimal quantity, decimal price,
-        int taxRateNumber, int sectionNumber)
-    {
-        var _resultCode = lib_addPosition(C1251To866(name), barcode, (double)quantity, (double)price,
-            (byte)taxRateNumber, 0, (byte)sectionNumber);
-
-
-        return _resultCode;
-    }
-
-    /// <summary>
-    /// Регистрация позиции
-    /// </summary>
-    /// <param name="name"></param>
-    /// <param name="barcode"></param>
-    /// <param name="quantity"></param>
-    /// <param name="price"></param>
-    /// <param name="taxRateNumber"></param>
-    /// <param name="sectionNumber"></param>
-    /// <param name="ffdPaymentMode"></param>
-    /// <param name="ffdGoodType"></param>
-    /// <param name="qName"></param>
-    /// <returns></returns>
-    public static int AddPosition(string name, string barcode, decimal quantity, decimal price,
-        int taxRateNumber, int sectionNumber, int ffdPaymentMode,
-        int ffdGoodType, int qName)
-    {
-        var q = qName.ToString("N0");
-
-        var _resultCode = lib_addPositionLarge(C1251To866(name), barcode, (double)quantity, (double)price,
-            (byte)taxRateNumber, 0, (byte)sectionNumber, (byte)0, (byte)0,
-            (int)ffdPaymentMode, (int)ffdGoodType, q);
-
-
-        return _resultCode;
-    }
-
-    /// <summary>
-    /// Регистрация позиции
-    /// </summary>
-    /// <param name="name"></param>
-    /// <param name="barcode"></param>
-    /// <param name="quantity"></param>
-    /// <param name="price"></param>
-    /// <param name="taxRateNumber"></param>
-    /// <param name="sectionNumber"></param>
-    /// <param name="ffdPaymentMode"></param>
-    /// <param name="ffdGoodType"></param>
-    /// <returns></returns>
-    public static int AddPosition(string name, string barcode, decimal quantity, decimal price,
-        int taxRateNumber, int sectionNumber, int ffdPaymentMode,
-        int ffdGoodType)
-    {
-        var _resultCode = lib_addPositionEx(C1251To866(name), barcode, (double)quantity, (double)price,
-            (byte)taxRateNumber, 0, (byte)sectionNumber,
-            (int)ffdPaymentMode, (int)ffdGoodType);
-
-
-        return _resultCode;
-    }
-
-
-  
-
-    /// <summary>
-    /// Получить сумму наличности
-    /// </summary>
-    /// <param name="sum"></param>
-    /// <returns></returns>
-    public static bool GetCashSum(out decimal sum)
-    {
-        var ans = new MData();
-        
-        lib_getKktInfo(ref ans, 7);
-        
-        var resultCode = ans.errCode;
-
-        if (resultCode != 0)
-        {
-            sum = 0;
-            return false;
-        }
-
-        var strAns = DataToString(ans).Replace(@".", "");
-
-        int.TryParse(strAns, out var kkmSum);
-        sum = kkmSum / 100M;
-        return true;
-    }
-
-
-
-    private static Encoding CP866()
-    {
-        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-        var enc = Encoding.GetEncoding(866);
-
-        return enc;
-    }
-
-    /// <summary>
-    /// Преобразование в строку
-    /// </summary>
-    /// <param name="data"></param>
-    /// <returns></returns>
-    private static string DataToString(MData data)
-    {
-        try
-        {
-            var newB2 = new List<byte>();
-
-            
-
-            for (var i = 8; i <= data.dataLength - 5; i++)
-            {
-                if (data.data[i] >= 32)
-                {
-                    newB2.Add(data.data[i]);
-                }
-
-                if (data.data[i] == 28)
-                {
-                    newB2.Add(46);
-                }
-            }
-
-
-
-            var r = CP866().GetString(newB2.ToArray());
-
-
-            return r;
-        }
-        catch(Exception e)
-        {
-            Console.WriteLine(e);
-            return string.Empty;
-        }
-    }
-
-    /// <summary>
-    /// Конвертация кодировки строки
-    /// </summary>
-    /// <param name="str1251"></param>
-    /// <returns></returns>
-    private static string C1251To866(string str1251)
-    {
-        var bytes = CP866().GetBytes(str1251);
-        var newBytes = Encoding.Convert(Encoding.GetEncoding(866), CP866(), bytes);
-        return Encoding.GetEncoding(1251).GetString(newBytes);
-    }
-
-    /// <summary>
-    /// Открыть документ
-    /// </summary>
-    /// <param name="docType"></param>
-    /// <param name="section"></param>
-    /// <param name="cashierName"></param>
-    /// <param name="taxSystem"></param>
-    /// <returns></returns>
-    public static int OpenDocument(DocTypes docType, int section, string cashierName,
-       int taxSystem = 0)
-    {
-        if (taxSystem == 0)
-        {
-            return Lib_openDocument((int)docType, section, cashierName);
-        }
-
-        return lib_openDocumentEx((int)docType, section, cashierName, 0,
-            (int)taxSystem);
-    }
-
-    public static int CloseDocument()
-    {
-        var ans = new MData();
-        lib_closeDocument(ref ans, 0);
-
-        return ans.errCode;
-    }
-
-    
-
-    public static int MarkCodeValidation(out int result, string fullCode, decimal q, int itemState, int unit,
-        string qFractional = "")
-    {
-        var ans = new MData();
-        result = 0;
-        var qStr = q.ToString(CultureInfo.InvariantCulture);
-        lib_MarkCodeValidation(ref ans, C1251To866(fullCode), qStr, itemState, unit);
-        var rs = DataToString(ans);
-
-        if (rs.IsNullOrEmpty() == false)
-        {
-            var arr = rs.Split('.');
-
-            if (arr.Any() && int.TryParse(arr[0], out var num))
-            {
-                result = num;
-            }
-        }
-
-        return ans.errCode;
-    }
-
-    public static int AcceptMarkingCode()
-    {
-        var ans = new MData();
-
-        var r = lib_ConfirmMarkCode(ref ans, 1);
-
-        return ans.errCode;
-    }
-
-    public static int AddItemMarkingCode(string fullCode, int itemState, int unit, int validResult)
-    {
-        var r = lib_AddMarkCode(fullCode, itemState, unit, validResult);
-
-        return r;
-    }
-
-    public static int KkmInitialization()
-    {
-        var r = lib_commandStart();
-
-
-        return r;
-    }
-
-    public static int SetClientAddress(string address)
-    {
-        if (address.IsNullOrEmpty())
-        {
-            return 0;
-        }
-
-        var r = lib_setClientAddress(address);
-        return r;
-    }
-
-    public static bool SetClientInn(string inn)
-    {
-        if (inn.IsNullOrEmpty())
-        {
-            return true;
-        }
-
-        var r = lib_SetBuyerInn(inn);
-        return r == 0;
-    }
-
-    public static bool SetClientName(string name)
-    {
-        if (name.IsNullOrEmpty())
-        {
-            return true;
-        }
-
-        var r = lib_SetBuyerInn(name);
-        return r == 0;
-    }
-
-    public static int SetPrintCheck(int i)
-    {
-        var r = lib_WriteSettingsTable((byte)1, 7, $"{i}");
-        return r;
-    }
-
-
-
-    public enum RequestType
-    {
-        CounterAndRegisters,
-
-        KkmInfo
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private  struct MData
-    {
-        // unsafe
-        public  int errCode;
-
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 256)]
-        public  byte[] data;
-
-        public  int dataLength;
-    }
-
-   
-
-    private bool IsNeedInitialization()
-    {
-        var los = GetListOfStatuses(out var fatal, out var current, out var document);
-
-        CheckResult(los);
-
-        return current[0] == '1';
-    }
 }
