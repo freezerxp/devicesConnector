@@ -432,11 +432,11 @@ public partial class VikiPrintDevice
     /// <returns></returns>
     public static DateTime GetDateTimeFromString(string str)
     {
-        var df = ".ddMMyy.HHmmss";
+        var df = @".ddMMyy.HHmmss";
 
         if (str.Length == 7)
         {
-            df = ".ddMMyy";
+            df = @".ddMMyy";
         }
 
 
@@ -459,20 +459,31 @@ public partial class VikiPrintDevice
 
     /// <summary>
     /// Подготовка ФИО + ИНН кассира
+    /// (с преобразованием кодировки 1251 -> 866
     /// </summary>
     /// <param name="cashier"></param>
     /// <returns></returns>
-    private string PrepareCashierNameAndInn(Cashier cashier)
+    private  string PrepareCashierNameAndInn(Cashier cashier)
     {
         var ffdV = _deviceConfig.DeviceSpecificConfig.Deserialize<KkmConfig>()?.FfdVersion;
 
 
+        string result;
+
         if (cashier.TaxId is {Length: >= 10} && ffdV > Enums.FFdVersions.Ffd100)
         {
-            return cashier.TaxId + @"&" + cashier.Name;
+            result =  cashier.TaxId + @"&" + cashier.Name;
+        }
+        else
+        {
+            result = cashier.Name;
         }
 
-        return cashier.Name;
+        result = C1251To866(result);
+
+        return result;
+
+
     }
 
 

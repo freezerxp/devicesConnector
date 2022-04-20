@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Text.Json;
 using devicesConnector.Configs;
 using devicesConnector.FiscalRegistrar.Objects;
 using devicesConnector.Helpers;
@@ -102,7 +103,6 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
     {
         var cashierName = PrepareCashierNameAndInn(cashier);
 
-        cashierName = C1251To866(cashierName);
 
         var result = type switch
         {
@@ -115,9 +115,64 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
         CheckResult(result);
     }
 
-    public void OpenReceipt(devicesConnector.ReceiptData? receipt)
+    public void OpenReceipt(ReceiptData? receipt)
     {
-        throw new NotImplementedException();
+
+        if (receipt == null)
+        {
+            throw new NullReferenceException();
+        }
+
+
+        var cashierName = receipt.Cashier.Name;
+
+        DocTypes docType;
+
+        if (receipt.FiscalType == Enums.ReceiptFiscalTypes.Fiscal)
+        {
+            docType = receipt.OperationType switch
+            {
+                Enums.ReceiptOperationTypes.Sale => DocTypes.SaleCheck,
+                Enums.ReceiptOperationTypes.ReturnSale => DocTypes.ReturnCheck,
+                Enums.ReceiptOperationTypes.Buy => throw new NotImplementedException(),
+                Enums.ReceiptOperationTypes.ReturnBuy => throw new NotImplementedException(),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+            cashierName = PrepareCashierNameAndInn(receipt.Cashier);
+        }
+        else
+        {
+            docType = DocTypes.Service;
+        }
+
+        // печать чека на бумаге 1 - вкл, 129 - выкл
+        //var r = SetPrintCheck(dc.CheckPrinter.FiscalKkm.IsAlwaysNoPrintCheck ? 129 : 1);
+        //CheckResult(r);
+
+        var taxIndex = receipt.CountrySpecificData.Deserialize<Objects.CountrySpecificData.Russia.ReceiptData>()?.TaxVariantIndex ?? 0;
+
+        var r = OpenDocument(docType, 1, cashierName, taxIndex);
+
+
+        //todo
+        //if (receipt.FiscalType == Enums.ReceiptFiscalTypes.Fiscal)
+        //{
+
+
+        //    SendDigitalCheck(checkData.AddressForDigitalCheck);
+
+        //    //похоже надо оплачивать это
+        //    // SetClientNameInn(checkData.Client);
+        //}
+
+        //CheckResult(r);
+
+        //if (dc.CheckPrinter.FiscalKkm.FfdVersion == GlobalDictionaries.Devices.FfdVersions.Ffd120)
+        //{
+        //    Ffd120CodeValidation(checkData);
+        //}
+
     }
 
     public void CloseReceipt()
