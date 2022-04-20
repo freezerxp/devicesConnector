@@ -178,6 +178,8 @@ public class AtolDto10Device : IFiscalRegistrarDevice
     {
         var resultCode = (int) _driver.errorCode;
 
+        LogHelper.Write("ККМ АТОЛ: resultCode = " + resultCode);
+
         if (resultCode == 0)
         {
             return; //успешно выполнено
@@ -250,6 +252,8 @@ public class AtolDto10Device : IFiscalRegistrarDevice
 
     public void OpenReceipt(ReceiptData? receipt)
     {
+        LogHelper.Write("ККМ АТОЛ: открытие чека");
+
         var ffdV = _deviceConfig.DeviceSpecificConfig.Deserialize<Objects.CountrySpecificData.Russia.KkmConfig>()?.FfdVersion;
 
 
@@ -333,6 +337,8 @@ public class AtolDto10Device : IFiscalRegistrarDevice
 
     public void RegisterItem(ReceiptItem item)
     {
+        LogHelper.Write("ККМ АТОЛ регистрация позиции");
+
         var ffdV = _deviceConfig.DeviceSpecificConfig.Deserialize<Objects.CountrySpecificData.Russia.KkmConfig>()?.FfdVersion;
         var receiptItemData = item.CountrySpecificData.Deserialize<Objects.CountrySpecificData.Russia.ReceiptItemData>();
 
@@ -396,6 +402,8 @@ public class AtolDto10Device : IFiscalRegistrarDevice
 
     public void RegisterPayment(ReceiptPayment payment)
     {
+        LogHelper.Write("ККМ АТОЛ регистрация платежа");
+
         switch (payment.MethodIndex)
         {
             case 1:
@@ -428,6 +436,7 @@ public class AtolDto10Device : IFiscalRegistrarDevice
 
     public void Connect()
     {
+        LogHelper.Write("Подключаемся к ККМ АТОЛ");
         _driver = CommonHelper.CreateObject(@"AddIn.Fptr10");
 
         if (_driver == null)
