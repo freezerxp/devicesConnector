@@ -72,7 +72,7 @@ public class CommandsQueueRepository
     /// <returns></returns>
     public CommandQueue GetCommandState(string commandId)
     {
-        return CommandsHistory.First(x => x.Command.Deserialize<DeviceCommand>()?.CommandId == commandId);
+        return CommandsHistory.Single(x => x.Command.Deserialize<DeviceCommand>()?.CommandId == commandId);
     }
 
     /// <summary>
@@ -101,32 +101,48 @@ public class CommandsQueueRepository
     /// </summary>
     private static void DoCommand()
     {
-        if (CommandsQueue.Any() == false)
+        CommandQueue? cq = null;
+
+        try
         {
-            return;
+            if (CommandsQueue.Any() == false)
+            {
+                return;
+            }
+
+            cq = CommandsQueue.Dequeue();
+
+            if (cq.Status != Answer.Statuses.Wait)
+            {
+                return;
+            }
+
+            var deviceCommand = cq.Command.Deserialize<DeviceCommand>();
+
+            if(deviceCommand == null)
+            {
+                throw new NullReferenceException();
+            }
+
+            var d = GetDeviceById(deviceCommand.DeviceId);
+
+            //для ККМ
+            if (d.Type == Enums.DeviceTypes.FiscalRegistrar)
+            {
+                var manager = new KkmCommandsManager();
+                manager.Do(cq);
+            }
         }
-
-        var c = CommandsQueue.Dequeue();
-
-        if (c.Status != Answer.Statuses.Wait)
+        catch (Exception e)
         {
-            return;
-        }
-
-        var deviceCommand = c.Command.Deserialize<DeviceCommand>();
-
-        if(deviceCommand == null)
-        {
-            throw new NullReferenceException();
-        }
-
-        var d = GetDeviceById(deviceCommand.DeviceId);
-
-        //для ККМ
-        if (d.Type == Enums.DeviceTypes.FiscalRegistrar)
-        {
-            var manager = new KkmCommandsManager();
-            manager.Do(c);
+            if (cq != null)
+            {
+                cq.Status = Answer.Statuses.Error;
+                cq.Result = JsonSerializer.SerializeToNode(new ErrorObject(e));
+            }
+            
+            Console.WriteLine(e);
+          
         }
     }
 
@@ -137,16 +153,10 @@ public class CommandsQueueRepository
     /// <param name="cq">Объект очереди</param>
     public static void SetResult(Action action, CommandQueue cq)
     {
-        try
-        {
+       
             action();
             cq.Status = Answer.Statuses.Ok;
-        }
-        catch (Exception e)
-        {
-            cq.Status = Answer.Statuses.Error;
-            cq.Result = JsonSerializer.SerializeToNode(new ErrorObject(e));
-        }
+       
     }
 
     /// <summary>
@@ -157,17 +167,11 @@ public class CommandsQueueRepository
     /// <param name="cq">Объект очереди</param>
     public static void SetResult<T>(Func<T> func, CommandQueue cq)
     {
-        try
-        {
+       
             var result = func.Invoke();
             cq.Status = Answer.Statuses.Ok;
             cq.Result = JsonSerializer.SerializeToNode(result);
-        }
-        catch (Exception e)
-        {
-            cq.Status = Answer.Statuses.Error;
-            cq.Result = JsonSerializer.SerializeToNode(new ErrorObject(e));
-        }
+      
 
 
 
@@ -185,7 +189,7 @@ public class CommandsQueueRepository
         var cr = new ConfigRepository();
         var c = cr.Get();
 
-        var d = c.Devices.FirstOrDefault(x => x.Id == id);
+        var d = c.Devices.Single(x => x.Id == id);
 
 
         return d;
