@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using devicesConnector.Common;
 using devicesConnector.Configs;
 using devicesConnector.FiscalRegistrar.Objects;
@@ -263,7 +265,7 @@ public class AtolDto10Device : IFiscalRegistrarDevice
 
         if (ffdV == Enums.FFdVersions.Ffd120)
         {
-            //Ffd120CodeValidation(checkData);
+            Ffd120CodeValidation(receipt);
         }
 
 
@@ -394,7 +396,7 @@ public class AtolDto10Device : IFiscalRegistrarDevice
                 //SetInfo_ffd105_ffd110(good);
                 break;
             case Enums.FFdVersions.Ffd120:
-                //SetInfo_ffd120(good);
+                SetInfoFfd120(item);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -408,6 +410,29 @@ public class AtolDto10Device : IFiscalRegistrarDevice
         CheckResult();
 
         //PrintNonFiscalStrings(good.CommentForFiscalCheck.Select(x => new NonFiscalString(x)).ToList());
+    }
+
+
+    private void SetInfoFfd120(ReceiptItem item)
+    {
+        var receiptItemData = item.CountrySpecificData
+            .Deserialize<Objects.CountrySpecificData.Russia.ReceiptItemData>();
+
+
+        _driver.setParam(2108, (int)(receiptItemData?.FfdData.Unit ?? 0));
+
+
+        if (receiptItemData?.MarkingInfo == null || !receiptItemData.MarkingInfo.RawCode.IsNullOrEmpty())
+        {
+            return;
+        }
+
+        _driver.setParam(_driver.LIBFPTR_PARAM_MARKING_CODE, receiptItemData.MarkingInfo.RawCode);
+        _driver.setParam(_driver.LIBFPTR_PARAM_MARKING_CODE_STATUS, (int)receiptItemData.MarkingInfo.EstimatedStatus);
+        _driver.setParam(_driver.LIBFPTR_PARAM_MARKING_PROCESSING_MODE, 0);
+        _driver.setParam(_driver.LIBFPTR_PARAM_MARKING_CODE_TYPE, _driver.LIBFPTR_MCT12_AUTO);
+        _driver.setParam(2106, receiptItemData.MarkingInfo.ValidationResultKkm);
+        
     }
 
     public void RegisterPayment(ReceiptPayment payment)
@@ -511,4 +536,98 @@ public class AtolDto10Device : IFiscalRegistrarDevice
     {
         Disconnect();
     }
+
+
+    [HandleProcessCorruptedStateExceptions]
+    private void Ffd120CodeValidation(ReceiptData receipt)
+    {
+        LogHelper.Write("Начинаем валидацию КМ для ФФД 1.2, АТОЛ 10");
+
+        _driver.cancelMarkingCodeValidation();
+        _driver.clearMarkingCodeValidationResult();
+
+            foreach (var item in receipt.Items)
+            {
+
+                var receiptItemData = item.CountrySpecificData
+                    .Deserialize<Objects.CountrySpecificData.Russia.ReceiptItemData>();
+                
+                if (receiptItemData?.MarkingInfo == null || receiptItemData.MarkingInfo.RawCode.IsNullOrEmpty())
+                {
+                    continue;
+                }
+
+
+                receiptItemData.MarkingInfo.RawCode = FiscalRegistrarFacade.PrepareMarkCodeForFfd120(receiptItemData.MarkingInfo.RawCode);
+                receiptItemData.MarkingInfo.EstimatedStatus = FiscalRegistrarFacade.GetMarkingCodeStatus(item, receipt.OperationType);
+
+                LogHelper.Write($"Валидация кода: { receiptItemData.MarkingInfo.RawCode}");
+                
+                _driver.setParam(_driver.LIBFPTR_PARAM_MARKING_CODE_TYPE, _driver.LIBFPTR_MCT12_AUTO);
+                _driver.setParam(_driver.LIBFPTR_PARAM_MARKING_CODE, receiptItemData.MarkingInfo.RawCode);
+                _driver.setParam(_driver.LIBFPTR_PARAM_MARKING_CODE_STATUS, receiptItemData.MarkingInfo.RawCode);
+                _driver.setParam(_driver.LIBFPTR_PARAM_MARKING_WAIT_FOR_VALIDATION_RESULT, true);
+                _driver.setParam(_driver.LIBFPTR_PARAM_MARKING_PROCESSING_MODE, 0);
+
+                if (receiptItemData.MarkingInfo.EstimatedStatus.IsEither(Enums.EstimatedStatus.DryForSale, Enums.EstimatedStatus.DryReturn))
+                {
+                    _driver.setParam(_driver.LIBFPTR_PARAM_QUANTITY, (double)item.Quantity);
+                    _driver.setParam(_driver.LIBFPTR_PARAM_MEASUREMENT_UNIT, receiptItemData.FfdData.Unit);
+
+                    if (receiptItemData.FfdData.Unit == Enums.FfdUnitsIndex.Pieces)
+                    {
+                        //ToDo: почитать
+                        // AtolDriver.setParam(AtolDriver.LIBFPTR_PARAM_MARKING_FRACTIONAL_QUANTITY, @"1/2");
+                    }
+                }
+
+
+                _driver.beginMarkingCodeValidation();
+
+                var validationReady = false;
+
+                for (var i = 0; i < 30; i++)
+                {
+                    _driver.getMarkingCodeValidationStatus();
+                    if (_driver.getParamBool(_driver.LIBFPTR_PARAM_MARKING_CODE_VALIDATION_READY))
+                    {
+                        validationReady = true;
+                        break;
+                    }
+
+                    Thread.Sleep(1000);
+                }
+
+
+                if (validationReady)
+                {
+                    var validationResult =
+                        _driver.getParamInt(_driver.LIBFPTR_PARAM_MARKING_CODE_ONLINE_VALIDATION_RESULT);
+
+                    var errorOnlineResult = _driver.getParamInt(_driver.LIBFPTR_PARAM_MARKING_CODE_ONLINE_VALIDATION_ERROR);
+                    var errorOnlineDescription = _driver.getParamString(_driver.LIBFPTR_PARAM_MARKING_CODE_ONLINE_VALIDATION_ERROR_DESCRIPTION);
+                    var errorOfflineResult = _driver.getParamInt(_driver.LIBFPTR_PARAM_MARKING_CODE_OFFLINE_VALIDATION_ERROR);
+
+
+                    LogHelper.Write("Проверка кода маркировки закончилась.");
+                    LogHelper.Write("ErrorOnlineResult: " + errorOnlineResult + ", " + errorOnlineDescription);
+                    LogHelper.Write("ErrorOfflineResult: " + errorOfflineResult);
+                    receiptItemData.MarkingInfo.ValidationResultKkm = (int)validationResult;
+
+                }
+                else
+                {
+                    LogHelper.Write("Проверка кода не завершена, таймаут проверки, отменяем проверку, но проводим КМ в чек");
+                }
+
+
+                LogHelper.Write($"Validation ready: {validationReady}; result code: {receiptItemData.MarkingInfo.ValidationResultKkm}");
+                _driver.acceptMarkingCode();
+
+                CheckResult();
+
+                item.CountrySpecificData = JsonSerializer.SerializeToNode(receiptItemData); 
+            }
+    }
+
 }

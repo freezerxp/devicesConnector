@@ -595,4 +595,157 @@ public class Enums
         /// </summary>
         Tm
     }
+
+    /// <summary>
+    /// Мера количества предмета расчета (2108)
+    /// </summary>
+    public enum FfdUnitsIndex
+    { 
+        /// <summary>
+        /// Штука
+        /// </summary>
+        Pieces = 0, 
+
+        /// <summary>
+        /// Грамм
+        /// </summary>
+        Gram = 10,
+
+        /// <summary>
+        /// Килограмм
+        /// </summary>
+        Kilogram = 11,
+
+        /// <summary>
+        /// Тонна
+        /// </summary>
+        Ton = 12,
+
+        /// <summary>
+        /// Сантиметр
+        /// </summary>
+        Centimeter = 20,
+
+        /// <summary>
+        /// Дециметр
+        /// </summary>
+        Decimeter = 21,
+
+        /// <summary>
+        /// Метр
+        /// </summary>
+        Meter = 22,
+
+        /// <summary>
+        /// Квадратный сантиметр
+        /// </summary>
+        SquareCentimeter = 30,
+
+        /// <summary>
+        /// Квадратный дециметр
+        /// </summary>
+        SquareDecimeter = 31,
+
+        /// <summary>
+        /// Квадратный метр
+        /// </summary>
+        SquareMeter = 32,
+
+        /// <summary>
+        /// Миллилитр
+        /// </summary>
+        Milliliter = 40,
+
+        /// <summary>
+        /// Литр
+        /// </summary>
+        Liter = 41,
+
+        /// <summary>
+        /// Кубический метр
+        /// </summary>
+        CubicMeter = 42,
+
+        /// <summary>
+        /// Киловатт/час
+        /// </summary>
+        KilowattHour = 50,
+
+        /// <summary>
+        /// Гигакалория
+        /// </summary>
+        Gigacaloria = 51,
+
+        /// <summary>
+        /// День
+        /// </summary>
+        Day = 70,
+
+        /// <summary>
+        /// Час
+        /// </summary>
+        Hour = 71,
+
+        /// <summary>
+        /// Минута
+        /// </summary>
+        Minute = 72,
+
+        /// <summary>
+        /// Секунда
+        /// </summary>
+        Second = 73,
+
+        /// <summary>
+        /// Килобайт
+        /// </summary>
+        Kilobyte = 80,
+
+        /// <summary>
+        /// Мегабайт
+        /// </summary>
+        Megabyte = 81,
+
+        /// <summary>
+        /// Гигабайт
+        /// </summary>
+        Gigabyte = 82,
+
+        /// <summary>
+        /// Терабайт
+        /// </summary>
+        Terabyte = 83,
+    }
+
+    /// <summary>
+    /// Значения реквизита планируемый статус товара (тег 2003)
+    /// </summary>
+    public enum EstimatedStatus
+    {
+        /// <summary>
+        /// Штучный товар, реализован
+        /// </summary>
+        PieceSold = 1,
+
+        /// <summary>
+        /// Мерный товар, в стадии реализации
+        /// </summary>
+        DryForSale = 2,
+
+        /// <summary>
+        /// Штучный товар, возвращен
+        /// </summary>
+        PieceReturn = 3,
+
+        /// <summary>
+        /// Часть товара, возвращена
+        /// </summary>
+        DryReturn = 4,
+
+        /// <summary>
+        /// Статус товара, не изменился
+        /// </summary>
+        StatusUnchanged = 255
+
+    }
 }

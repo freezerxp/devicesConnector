@@ -19,6 +19,10 @@ public class ReceiptItemData
     /// </summary>
     public class RuFfdInfo
     {
+        /// <summary>
+        /// Мера количества предмета расчета (2108)
+        /// </summary>
+        public Enums.FfdUnitsIndex Unit { get; set; }
 
         /// <summary>
         /// Признак предмета расчета (тег 1212)
@@ -36,6 +40,16 @@ public class ReceiptItemData
     /// </summary>
     public class RuMarkingInfo
     {
+        /// <summary>
+        /// Планируемый статус товара
+        /// </summary>
+        public Enums.EstimatedStatus EstimatedStatus { get; set; } = Enums.EstimatedStatus.PieceSold;
+
+        /// <summary>
+        /// Результат валидации кода маркирвоки 
+        /// </summary>
+        public object ValidationResultKkm { get; set; }
+
         /// <summary>
         /// Полный код маркировки 
         /// </summary>
