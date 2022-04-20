@@ -288,4 +288,9 @@ public class KkmServerDevice : IFiscalRegistrarDevice
 
         _driver.SendCommand(c);
     }
+
+    public void Dispose()
+    {
+        //
+    }
 }

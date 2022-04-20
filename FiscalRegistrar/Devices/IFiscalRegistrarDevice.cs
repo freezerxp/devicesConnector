@@ -7,7 +7,7 @@ namespace devicesConnector.FiscalRegistrar.Devices;
 /// <summary>
 /// Интерфейс фискальных регистраторов
 /// </summary>
-public interface IFiscalRegistrarDevice: IDevice
+public interface IFiscalRegistrarDevice: IDevice, IDisposable
 {
 
     /// <summary>

@@ -498,4 +498,9 @@ public class AtolDto10Device : IFiscalRegistrarDevice
         _driver.cashIncome();
         CheckResult();
     }
+
+    public void Dispose()
+    {
+        Disconnect();
+    }
 }

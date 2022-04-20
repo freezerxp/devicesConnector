@@ -95,12 +95,24 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
 
     public void OpenSession(Cashier cashier)
     {
-        throw new NotImplementedException();
+        //открывается автоматически, метода нет в драйвере
     }
 
     public void GetReport(Enums.ReportTypes type, Cashier cashier)
     {
-        throw new NotImplementedException();
+        var cashierName = PrepareCashierNameAndInn(cashier);
+
+        cashierName = C1251To866(cashierName);
+
+        var result = type switch
+        {
+            Enums.ReportTypes.ZReport => lib_zReport(cashierName),
+            Enums.ReportTypes.XReport => lib_xReport(cashierName),
+            Enums.ReportTypes.XReportWithGoods => throw new NotSupportedException(),
+            _ => throw new ArgumentOutOfRangeException(nameof(type), this, null)
+        };
+
+        CheckResult(result);
     }
 
     public void OpenReceipt(devicesConnector.ReceiptData? receipt)
@@ -180,5 +192,10 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
     public void CashOut(decimal sum, Cashier cashier)
     {
         throw new NotImplementedException();
+    }
+
+    public void Dispose()
+    {
+        
     }
 }
