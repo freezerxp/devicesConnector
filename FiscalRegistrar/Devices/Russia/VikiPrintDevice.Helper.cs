@@ -64,7 +64,7 @@ public partial class VikiPrintDevice
     /// </summary>
     /// <returns></returns>
     [DllImport(PiritlibDllPath, EntryPoint = "libCancelDocument")]
-    private static extern int LibCancelDocument();
+    private static extern int lib_CancelDocument();
 
     /// <summary>
     /// Напечатать нефискальную строку
@@ -432,11 +432,11 @@ public partial class VikiPrintDevice
     /// <returns></returns>
     public static DateTime GetDateTimeFromString(string str)
     {
-        var df = ".ddMMyy.HHmmss";
+        var df = @".ddMMyy.HHmmss";
 
         if (str.Length == 7)
         {
-            df = ".ddMMyy";
+            df = @".ddMMyy";
         }
 
 
@@ -459,21 +459,84 @@ public partial class VikiPrintDevice
 
     /// <summary>
     /// Подготовка ФИО + ИНН кассира
+    /// (с преобразованием кодировки 1251 -> 866
     /// </summary>
     /// <param name="cashier"></param>
     /// <returns></returns>
-    private string PrepareCashierNameAndInn(Cashier cashier)
+    private  string PrepareCashierNameAndInn(Cashier cashier)
     {
         var ffdV = _deviceConfig.DeviceSpecificConfig.Deserialize<KkmConfig>()?.FfdVersion;
 
 
+        string result;
+
         if (cashier.TaxId is {Length: >= 10} && ffdV > Enums.FFdVersions.Ffd100)
         {
-            return cashier.TaxId + @"&" + cashier.Name;
+            result =  cashier.TaxId + @"&" + cashier.Name;
+        }
+        else
+        {
+            result = cashier.Name;
         }
 
-        return cashier.Name;
+        result = C1251To866(result);
+
+        return result;
+
+
     }
+
+
+    private void SendDigitalCheck(string address)
+    {
+        if (address.IsNullOrEmpty())
+        {
+            return;
+        }
+
+
+        var r = lib_setClientAddress(address);
+
+
+        CheckResult(r);
+
+
+        //включение/отключение печати чека
+        //if ()
+        //{
+        //    r = Driver.SetPrintCheck(129);
+        //    CheckResult(r);
+        //}
+    }
+
+    //private void Ffd120CodeValidation(CheckData.CheckData checkData)
+    //{
+
+      
+
+    //    foreach (var item in checkData.GoodsList
+    //                 .Where(item => item.RuMarkedInfo != null && !item.RuMarkedInfo.FullCode.IsNullOrEmpty()))
+    //    {
+
+    //        //обнуляю результат
+    //        item.RuMarkedInfo.ValidationResultKkm = 0;
+
+    //        var fullCode = PrepareMarkCodeForFfd120(item.RuMarkedInfo.FullCode);
+    //        var status = RuOnlineKkmHelper.GetMarkingCodeStatus(item, checkData.CheckType);
+
+
+
+    //        var r = MarkCodeValidation(out var validationResultKkm, fullCode, item.Quantity, status, item.Unit.RuFfdUnitsIndex);
+    //        //CheckResult(r);
+
+
+    //        item.RuMarkedInfo.ValidationResultKkm = validationResultKkm;
+
+
+
+    //        AcceptMarkingCode();
+    //    }
+    //}
 
 
 
@@ -706,14 +769,7 @@ public partial class VikiPrintDevice
         return lib_cashInOut("", (long)(sum * 100M));
     }
 
-    /// <summary>
-    /// Отмена документа
-    /// </summary>
-    /// <returns></returns>
-    public static int CancelDocument()
-    {
-        return LibCancelDocument();
-    }
+  
 
     /// <summary>
     /// Получить сумму наличности
@@ -808,18 +864,18 @@ public partial class VikiPrintDevice
     /// </summary>
     /// <param name="docType"></param>
     /// <param name="section"></param>
-    /// <param name="userName"></param>
+    /// <param name="cashierName"></param>
     /// <param name="taxSystem"></param>
     /// <returns></returns>
-    public static int OpenDocument(DocTypes docType, int section, string userName,
+    public static int OpenDocument(DocTypes docType, int section, string cashierName,
        int taxSystem = 0)
     {
         if (taxSystem == 0)
         {
-            return Lib_openDocument((int)docType, section, C1251To866(userName));
+            return Lib_openDocument((int)docType, section, cashierName);
         }
 
-        return lib_openDocumentEx((int)docType, section, C1251To866(userName), 0,
+        return lib_openDocumentEx((int)docType, section, cashierName, 0,
             (int)taxSystem);
     }
 
@@ -830,6 +886,8 @@ public partial class VikiPrintDevice
 
         return ans.errCode;
     }
+
+    
 
     public static int MarkCodeValidation(out int result, string fullCode, decimal q, int itemState, int unit,
         string qFractional = "")

@@ -1,13 +1,15 @@
 ﻿using System.Diagnostics;
+using System.Text.Json;
 using devicesConnector.Configs;
 using devicesConnector.FiscalRegistrar.Objects;
 using devicesConnector.Helpers;
+using Microsoft.AspNetCore.Http;
 
 namespace devicesConnector.FiscalRegistrar.Devices.Russia;
 
 public partial class VikiPrintDevice : IFiscalRegistrarDevice
 {
-    private Device _deviceConfig;
+    private readonly Device _deviceConfig;
 
     public VikiPrintDevice(Device device)
     {
@@ -102,7 +104,6 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
     {
         var cashierName = PrepareCashierNameAndInn(cashier);
 
-        cashierName = C1251To866(cashierName);
 
         var result = type switch
         {
@@ -115,14 +116,86 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
         CheckResult(result);
     }
 
-    public void OpenReceipt(devicesConnector.ReceiptData? receipt)
+    public void OpenReceipt(ReceiptData? receipt)
     {
-        throw new NotImplementedException();
+        if (receipt == null)
+        {
+            throw new NullReferenceException();
+        }
+
+
+        var cashierName = receipt.Cashier.Name;
+
+        DocTypes docType;
+
+        if (receipt.FiscalType == Enums.ReceiptFiscalTypes.Fiscal)
+        {
+            docType = receipt.OperationType switch
+            {
+                Enums.ReceiptOperationTypes.Sale => DocTypes.SaleCheck,
+                Enums.ReceiptOperationTypes.ReturnSale => DocTypes.ReturnCheck,
+                Enums.ReceiptOperationTypes.Buy => throw new NotImplementedException(),
+                Enums.ReceiptOperationTypes.ReturnBuy => throw new NotImplementedException(),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+            cashierName = PrepareCashierNameAndInn(receipt.Cashier);
+        }
+        else
+        {
+            docType = DocTypes.Service;
+        }
+
+        // печать чека на бумаге 1 - вкл, 129 - выкл
+        //var r = SetPrintCheck(dc.CheckPrinter.FiscalKkm.IsAlwaysNoPrintCheck ? 129 : 1);
+        //CheckResult(r);
+
+        var taxIndex = receipt.CountrySpecificData.Deserialize<Objects.CountrySpecificData.Russia.ReceiptData>()
+            ?.TaxVariantIndex ?? 0;
+
+        var openDocResult = OpenDocument(docType, 1, cashierName, taxIndex);
+        CheckResult(openDocResult);
+
+        //todo
+        if (receipt.FiscalType == Enums.ReceiptFiscalTypes.Fiscal)
+        {
+            var digitalReceiptAddress = receipt
+                .CountrySpecificData
+                .Deserialize<Objects.CountrySpecificData.Russia.ReceiptData>()?
+                .DigitalReceiptAddress;
+
+            if (digitalReceiptAddress?.IsNullOrEmpty() == false)
+            {
+                var setClientAddressResult = lib_setClientAddress(digitalReceiptAddress);
+
+                CheckResult(setClientAddressResult);
+            }
+
+
+            //похоже надо оплачивать это
+            // SetClientNameInn(checkData.Client);
+        }
+
+        
+        //todo: маркировка
+        //if (dc.CheckPrinter.FiscalKkm.FfdVersion == GlobalDictionaries.Devices.FfdVersions.Ffd120)
+        //{
+        //    Ffd120CodeValidation(checkData);
+        //}
     }
 
     public void CloseReceipt()
     {
-        throw new NotImplementedException();
+        var r = CloseDocument();
+
+        CheckResult(r);
+    }
+
+    public void CancelReceipt()
+    {
+        var r = lib_CancelDocument();
+
+        CheckResult(r);
     }
 
     public void RegisterItem(ReceiptItem item)
@@ -165,7 +238,7 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
     }
 
 
-    private void CheckResult(int resultCode)
+    private  void CheckResult( int resultCode)
     {
         if (resultCode == 0)
         {
@@ -186,13 +259,37 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
 
     public void CashIn(decimal sum, Cashier cashier)
     {
-        throw new NotImplementedException();
+        CashInOut(sum, cashier);
+
+
+    }
+  public void CashOut(decimal sum, Cashier cashier)
+    {
+        CashInOut(-sum, cashier);
     }
 
-    public void CashOut(decimal sum, Cashier cashier)
+    private void CashInOut(decimal sum, Cashier cashier)
     {
-        throw new NotImplementedException();
+        var cashierName = PrepareCashierNameAndInn(cashier);
+
+        var docType = sum > 0 ? DocTypes.CashIncome : DocTypes.CashOutcome;
+
+        var openDocResult = OpenDocument(docType, 1, cashierName);
+
+        CheckResult(openDocResult);
+
+        var cashOutResult = CashInOut(sum);
+
+        CheckResult(cashOutResult);
+
+        var closeDocResult = CloseDocument();
+
+        CheckResult(closeDocResult);
     }
+
+
+
+  
 
     public void Dispose()
     {
