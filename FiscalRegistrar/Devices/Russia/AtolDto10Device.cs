@@ -427,7 +427,7 @@ public class AtolDto10Device : IFiscalRegistrarDevice
         _driver.setParam(2108, (int)(receiptItemData?.FfdData.Unit ?? 0));
 
 
-        if (receiptItemData?.MarkingInfo == null || !receiptItemData.MarkingInfo.RawCode.IsNullOrEmpty())
+        if (receiptItemData?.MarkingInfo == null || receiptItemData.MarkingInfo.RawCode.IsNullOrEmpty())
         {
             return;
         }
@@ -436,7 +436,7 @@ public class AtolDto10Device : IFiscalRegistrarDevice
         _driver.setParam(_driver.LIBFPTR_PARAM_MARKING_CODE_STATUS, (int)receiptItemData.MarkingInfo.EstimatedStatus);
         _driver.setParam(_driver.LIBFPTR_PARAM_MARKING_PROCESSING_MODE, 0);
         _driver.setParam(_driver.LIBFPTR_PARAM_MARKING_CODE_TYPE, _driver.LIBFPTR_MCT12_AUTO);
-        _driver.setParam(2106, receiptItemData.MarkingInfo.ValidationResultKkm);
+        _driver.setParam(2106, (int)receiptItemData.MarkingInfo.ValidationResultKkm);
         
     }
 
@@ -570,7 +570,7 @@ public class AtolDto10Device : IFiscalRegistrarDevice
                 
                 _driver.setParam(_driver.LIBFPTR_PARAM_MARKING_CODE_TYPE, _driver.LIBFPTR_MCT12_AUTO);
                 _driver.setParam(_driver.LIBFPTR_PARAM_MARKING_CODE, receiptItemData.MarkingInfo.RawCode);
-                _driver.setParam(_driver.LIBFPTR_PARAM_MARKING_CODE_STATUS, receiptItemData.MarkingInfo.RawCode);
+                _driver.setParam(_driver.LIBFPTR_PARAM_MARKING_CODE_STATUS, (int)receiptItemData.MarkingInfo.EstimatedStatus);
                 _driver.setParam(_driver.LIBFPTR_PARAM_MARKING_WAIT_FOR_VALIDATION_RESULT, true);
                 _driver.setParam(_driver.LIBFPTR_PARAM_MARKING_PROCESSING_MODE, 0);
 
