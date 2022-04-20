@@ -53,15 +53,17 @@ public class CommandsQueueRepository
     /// <param name="command">Команда</param>
     public void AddToQueue(JsonNode command)
     {
+        var commandId = command.Deserialize<DeviceCommand>()?.CommandId;
+
         if (CommandsHistory.Any(x =>
-                x.Command.Deserialize<DeviceCommand>()?.CommandId == command.Deserialize<DeviceCommand>()?.CommandId))
+                x.Command.Deserialize<DeviceCommand>()?.CommandId == commandId))
         {
             throw new Exception("Команда с указанным ИД уже есть в очереди");
         }
 
         var cq = new CommandQueue
         {
-            CommandId = command.Deserialize<DeviceCommand>()?.CommandId ?? Guid.NewGuid().ToString(),
+            CommandId = commandId ?? Guid.NewGuid().ToString(),
             Command = command,
             Status = Answer.Statuses.Wait
         };

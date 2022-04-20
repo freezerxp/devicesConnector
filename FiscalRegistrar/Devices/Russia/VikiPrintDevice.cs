@@ -3,6 +3,7 @@ using System.Text.Json;
 using devicesConnector.Configs;
 using devicesConnector.FiscalRegistrar.Objects;
 using devicesConnector.Helpers;
+using Microsoft.AspNetCore.Http;
 
 namespace devicesConnector.FiscalRegistrar.Devices.Russia;
 
@@ -192,7 +193,9 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
 
     public void CancelReceipt()
     {
-        throw new NotImplementedException();
+        var r = lib_CancelDocument();
+
+        CheckResult(r);
     }
 
     public void RegisterItem(ReceiptItem item)
@@ -256,13 +259,37 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
 
     public void CashIn(decimal sum, Cashier cashier)
     {
-        throw new NotImplementedException();
+        CashInOut(sum, cashier);
+
+
+    }
+  public void CashOut(decimal sum, Cashier cashier)
+    {
+        CashInOut(-sum, cashier);
     }
 
-    public void CashOut(decimal sum, Cashier cashier)
+    private void CashInOut(decimal sum, Cashier cashier)
     {
-        throw new NotImplementedException();
+        var cashierName = PrepareCashierNameAndInn(cashier);
+
+        var docType = sum > 0 ? DocTypes.CashIncome : DocTypes.CashOutcome;
+
+        var openDocResult = OpenDocument(docType, 1, cashierName);
+
+        CheckResult(openDocResult);
+
+        var cashOutResult = CashInOut(sum);
+
+        CheckResult(cashOutResult);
+
+        var closeDocResult = CloseDocument();
+
+        CheckResult(closeDocResult);
     }
+
+
+
+  
 
     public void Dispose()
     {

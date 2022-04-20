@@ -64,7 +64,7 @@ public partial class VikiPrintDevice
     /// </summary>
     /// <returns></returns>
     [DllImport(PiritlibDllPath, EntryPoint = "libCancelDocument")]
-    private static extern int LibCancelDocument();
+    private static extern int lib_CancelDocument();
 
     /// <summary>
     /// Напечатать нефискальную строку
@@ -769,14 +769,7 @@ public partial class VikiPrintDevice
         return lib_cashInOut("", (long)(sum * 100M));
     }
 
-    /// <summary>
-    /// Отмена документа
-    /// </summary>
-    /// <returns></returns>
-    public static int CancelDocument()
-    {
-        return LibCancelDocument();
-    }
+  
 
     /// <summary>
     /// Получить сумму наличности
@@ -893,6 +886,8 @@ public partial class VikiPrintDevice
 
         return ans.errCode;
     }
+
+    
 
     public static int MarkCodeValidation(out int result, string fullCode, decimal q, int itemState, int unit,
         string qFractional = "")

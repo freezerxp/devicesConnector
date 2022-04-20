@@ -24,6 +24,11 @@ public   class DeviceCommand
     /// </summary>
     public int CommandType { get; set; }
 
+    /// <summary>
+    /// Выполнение команды без постановки в очередь (для тестирования)
+    /// </summary>
+    public bool WithOutQueue { get; set; }
+
 }
 
 
