@@ -65,13 +65,18 @@ public class ShtihM : IFiscalRegistrarDevice
         _driver.GetDeviceMetrics();
         status.Model = _driver.UDescription;
 
+        _driver.RegisterNumber = 241;
+        _driver.GetCashReg();
+
+        status.CashSum = (decimal) _driver.ContentsOfCashRegister;
+
 
         var ffdV = _device.DeviceSpecificConfig.Deserialize<Objects.CountrySpecificData.Russia.KkmConfig>()?.FfdVersion;
 
 
         if (ffdV != Enums.FFdVersions.Offline)
         {
-            CheckResult(_driver.FNGetInfoExchangeStatus());
+            _driver.FNGetInfoExchangeStatus();
 
             status.RuKkmInfo = new KkmStatus.RuKkm
             {
@@ -88,12 +93,117 @@ public class ShtihM : IFiscalRegistrarDevice
 
     public void OpenSession(Cashier cashier)
     {
-        throw new NotImplementedException();
+        var ffdV = _device.DeviceSpecificConfig.Deserialize<Objects.CountrySpecificData.Russia.KkmConfig>()?.FfdVersion;
+
+
+        if (ffdV == Enums.FFdVersions.Offline)
+        {
+            CheckResult(_driver.OpenSession());
+        }
+        else
+        {
+            CheckResult(_driver.FNBeginOpenSession());
+
+            SetCashierData(cashier);
+
+            CheckResult(_driver.FNOpenSession());
+        }
+
+        // пауза, т.к. при последующей попытке продать товар пишет, что неверный статус ФН
+        Thread.Sleep(2_000);
+    }
+
+    private void SetCashierData(Cashier cashier)
+    {
+        WriteOfdAttribute(_driver.CashierName, cashier.Name);
+        WriteOfdAttribute(_driver.CashierInn, cashier.TaxId);
+    }
+
+
+    private void WriteOfdAttribute(Enums.OfdAttributes ofdAttribute, object? value)
+    {
+        if (value == null || value.ToString().IsNullOrEmpty())
+        {
+            return;
+        }
+
+        _driver.TagNumber = (int) ofdAttribute;
+
+        switch (ofdAttribute)
+        {
+            case Enums.OfdAttributes.CashierInn:
+            case Enums.OfdAttributes.CashierName:
+            case Enums.OfdAttributes.ClientEmailPhone:
+            {
+                if (value.ToString().IsNullOrEmpty()) //не записываю пустое значение
+                {
+                    return;
+                }
+
+                _driver.TagType = 7;
+                _driver.TagValueStr = value.ToString();
+                break;
+            }
+            case Enums.OfdAttributes.UnitCode:
+                _driver.TagType = 2;
+                _driver.TagValueInt = value;
+                break;
+
+            //case OfdAttributes.TaxSystem:
+            //    break;
+            //case OfdAttributes.ClientName:
+            //    break;
+            //case OfdAttributes.ClientInn:
+            //    break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(ofdAttribute), ofdAttribute, null);
+        }
+
+        CheckResult(_driver.FNSendTag());
+    }
+
+
+    private void CloseSession(Cashier cashier)
+    {
+        {
+            var ffdV = _device.DeviceSpecificConfig.Deserialize<Objects.CountrySpecificData.Russia.KkmConfig>()
+                ?.FfdVersion;
+
+
+            if (ffdV == Enums.FFdVersions.Offline)
+            {
+                CheckResult(_driver.PrintReportWithCleaning());
+            }
+            else
+            {
+                CheckResult(_driver.FNBeginCloseSession());
+
+                SetCashierData(cashier);
+
+                CheckResult(_driver.FNCloseSession());
+            }
+        }
     }
 
     public void GetReport(Enums.ReportTypes type, Cashier cashier)
     {
-        throw new NotImplementedException();
+        switch (type)
+        {
+            case Enums.ReportTypes.ZReport:
+                CloseSession(cashier);
+                break;
+            case Enums.ReportTypes.XReport:
+
+
+                CheckResult(_driver.PrintReportWithoutCleaning());
+
+                break;
+            case Enums.ReportTypes.XReportWithGoods:
+                throw new NotSupportedException();
+
+            default:
+                throw new ArgumentOutOfRangeException(nameof(type), type, null);
+        }
     }
 
     public void OpenReceipt(ReceiptData? receipt)
