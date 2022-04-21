@@ -8,12 +8,12 @@ public class ReceiptItemData
     /// <summary>
     /// Данные по ФФД
     /// </summary>
-    public RuFfdInfo FfdData { get; set; }
+    public RuFfdInfo? FfdData { get; set; }
 
     /// <summary>
     /// Информация о маркировке
     /// </summary>
-    public RuMarkingInfo MarkingInfo { get; set; }
+    public RuMarkingInfo? MarkingInfo { get; set; }
     /// <summary>
     /// Данные по ФФД
     /// </summary>

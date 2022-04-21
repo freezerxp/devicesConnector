@@ -310,8 +310,6 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
     /// <param name="item">Позиция в чеке</param>
     private void RegisterFfd120(ReceiptItem item)
     {
-      
-
         var ruData = item.CountrySpecificData.Deserialize<ReceiptItemData>();
 
         if (ruData == null)
@@ -319,16 +317,24 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
             throw new NullReferenceException();
         }
 
-
-        var markCode = RuKkmHelper.PrepareMarkCodeForFfd120(ruData.MarkingInfo.RawCode);
-
-        if (markCode.IsNullOrEmpty() == false)
+        if (ruData.MarkingInfo != null)
         {
+            var markCode = RuKkmHelper.PrepareMarkCodeForFfd120(ruData.MarkingInfo.RawCode);
 
-            var addMarkingResult = AddItemMarkingCode(markCode, (int)ruData.MarkingInfo.EstimatedStatus, (int)ruData.FfdData.Unit,
-                (int)ruData.MarkingInfo.ValidationResultKkm);
-            CheckResult(addMarkingResult);
+            if (markCode.IsNullOrEmpty() == false)
+            {
+                var addMarkingResult = AddItemMarkingCode(markCode, (int) ruData.MarkingInfo.EstimatedStatus,
+                    (int) ruData.FfdData.Unit,
+                    (int) ruData.MarkingInfo.ValidationResultKkm);
+                CheckResult(addMarkingResult);
+            }
         }
+
+        if (ruData.FfdData == null)
+        {
+            throw new NullReferenceException();
+        }
+
 
         var q = ((int) ruData.FfdData.Unit).ToString("N0");
 
