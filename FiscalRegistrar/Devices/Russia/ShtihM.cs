@@ -293,9 +293,10 @@ public class ShtihM : IFiscalRegistrarDevice
 
         //RegisterAllPayments();
 
-        for (int i = 1; i < 17; i++)
+        for (int i = 1; i < 17; i++) //не работает так
         {
-            _driver[$"Summ{i}"] = Payments[i]; //должно сработать
+            var s = $"Summ{i}";
+            _driver[s] = Payments[i]; //должно сработать
         }
 
         var ffdV = _device.DeviceSpecificConfig.Deserialize<Objects.CountrySpecificData.Russia.KkmConfig>()
