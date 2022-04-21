@@ -349,7 +349,8 @@ public class AtolDto10Device : IFiscalRegistrarDevice
 
     public void CancelReceipt()
     {
-        throw new NotImplementedException();
+        _driver.cancelReceipt();
+        CheckResult();
     }
 
     public void RegisterItem(ReceiptItem item)

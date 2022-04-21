@@ -49,6 +49,9 @@ public class KkmCommandsManager : ICommandManager
             case Enums.CommandTypes.PrintFiscalReceipt:
                 PrintFiscalReceipt(kkm, hi);
                 break;
+            case Enums.CommandTypes.CancelFiscalReceipt:
+                CancelReceipt(kkm, hi);
+                break;
         }
     }
 
@@ -77,6 +80,18 @@ public class KkmCommandsManager : ICommandManager
     {
         var c = cq.Command.Deserialize<KkmOpenSessionCommand>();
         var a = () => kkm.OpenSession(c.Cashier);
+
+        SetResult(a, cq);
+    }
+
+    /// <summary>
+    /// Отмена (аннулирование) чека
+    /// </summary>
+    /// <param name="kkm">ККМ</param>
+    /// <param name="cq">Объект очереди</param>
+    private static void CancelReceipt(FiscalRegistrarFacade kkm, CommandQueue cq)
+    {
+        var a = kkm.CancelReceipt;
 
         SetResult(a, cq);
     }

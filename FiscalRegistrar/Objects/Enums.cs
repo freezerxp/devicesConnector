@@ -87,7 +87,12 @@ public class Enums
         /// <summary>
         /// Напечатать чек
         /// </summary>
-        PrintFiscalReceipt
+        PrintFiscalReceipt,
+
+        /// <summary>
+        /// Отменить (аннулировать) чек
+        /// </summary>
+        CancelFiscalReceipt
 
 
     }

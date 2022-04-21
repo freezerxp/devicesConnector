@@ -88,7 +88,14 @@ public class FiscalRegistrarFacade:IDisposable
         return _kkm.GetStatus();
 
     }
+    public void CancelReceipt()
+    {
 
+        //todo: подключение к ккм
+
+        _kkm.CancelReceipt();
+
+    }
     public void OpenSession(Cashier cashier)
     {
         //todo: connection
