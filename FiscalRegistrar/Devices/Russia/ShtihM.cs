@@ -117,8 +117,8 @@ public class ShtihM : IFiscalRegistrarDevice
 
     private void SetCashierData(Cashier cashier)
     {
-        WriteOfdAttribute(_driver.CashierName, cashier.Name);
-        WriteOfdAttribute(_driver.CashierInn, cashier.TaxId);
+        WriteOfdAttribute(Enums.OfdAttributes.CashierName, cashier.Name);
+        WriteOfdAttribute(Enums.OfdAttributes.CashierInn, cashier.TaxId);
     }
 
 
