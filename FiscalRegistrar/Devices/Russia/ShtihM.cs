@@ -391,7 +391,7 @@ public class ShtihM : IFiscalRegistrarDevice
             throw new NullReferenceException();
         }
 
-        _driver.Tax1 = good.TaxRateIndex;
+        _driver.Tax1 = good.TaxRateIndex ?? 0;
         _driver.PaymentItemSign = ruData.FfdData.Subject;
         _driver.PaymentTypeSign = ruData.FfdData.Method;
         _driver.Summ1Enabled = false;
