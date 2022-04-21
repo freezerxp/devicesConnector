@@ -45,6 +45,24 @@
       "DeviceSpecificConfig": {
         "FfdVersion": 4
       }
+    },
+    {
+      "Id": "shtrih",
+      "Type": 1,
+      "Name": "Штрих-М",
+      "SubType": 104,
+      "Connection": {
+        "ConnectionType": "Lan",
+        "Lan": {
+          "HostUrl": "192.168.137.111",
+          "PortNumber": 7778,
+          "UserLogin": "",
+          "UserPassword": ""
+        }
+      },
+      "DeviceSpecificConfig": {
+        "FfdVersion": 4
+      }
     }
   ] 
 }
