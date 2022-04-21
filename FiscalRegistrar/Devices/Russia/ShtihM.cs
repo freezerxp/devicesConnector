@@ -1,8 +1,10 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text.Json;
+using devicesConnector.Common;
 using devicesConnector.Configs;
 using devicesConnector.FiscalRegistrar.Objects;
 using devicesConnector.Helpers;
+using Enums = devicesConnector.FiscalRegistrar.Objects.Enums;
 
 namespace devicesConnector.FiscalRegistrar.Devices.Russia;
 
@@ -132,6 +134,40 @@ public class ShtihM : IFiscalRegistrarDevice
         {
             throw new NullReferenceException();
         }
+
+
+        var connType = _device.Connection.ConnectionType;
+
+
+        if (connType == DeviceConnection.ConnectionTypes.ComPort)
+        {
+            var comPort = _device.Connection.ComPort;
+
+            if (comPort == null)
+            {
+                throw new NullReferenceException();
+            }
+
+            _driver.ConnectionType = 0; //локально
+            _driver.ComNumber = comPort.PortNumber;
+            _driver.BaudRate = 6; //115200
+        }
+
+        if (connType == DeviceConnection.ConnectionTypes.Lan)
+        {
+            var lan = _device.Connection.Lan;
+
+            if (lan == null)
+            {
+                throw new NullReferenceException();
+            }
+
+            _driver.ConnectionType = 6; //TCP-сокет
+            _driver.UseIPAddress = true;
+            _driver.IPAddress = lan.HostUrl;
+            _driver.TCPPort = lan.PortNumber;
+        }
+
 
         var connectResult = _driver.Connect();
 
