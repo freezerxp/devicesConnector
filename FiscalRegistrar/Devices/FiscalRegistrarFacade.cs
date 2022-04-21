@@ -6,7 +6,7 @@ namespace devicesConnector.FiscalRegistrar.Devices;
 
 public class FiscalRegistrarFacade : IDisposable
 {
-    private IFiscalRegistrarDevice _kkm;
+    private readonly IFiscalRegistrarDevice _kkm;
 
     public FiscalRegistrarFacade(Device device)
     {
@@ -17,7 +17,7 @@ public class FiscalRegistrarFacade : IDisposable
             ,
             Enums.KkmTypes.Atol10 => new AtolDto10(device),
             Enums.KkmTypes.AtolWebServer => throw new NotImplementedException(),
-            Enums.KkmTypes.ShtrihM => throw new NotImplementedException(),
+            Enums.KkmTypes.ShtrihM => new ShtihM(device),
             Enums.KkmTypes.VikiPrint => new VikiPrint(device),
             Enums.KkmTypes.Mercury => throw new NotImplementedException(),
             Enums.KkmTypes.KkmServer => new KkmServer(device),

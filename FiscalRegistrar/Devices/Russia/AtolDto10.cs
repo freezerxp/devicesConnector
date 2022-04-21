@@ -22,12 +22,12 @@ public class AtolDto10 : IFiscalRegistrarDevice
     /// <summary>
     /// Настройки устройства
     /// </summary>
-    private readonly Device _deviceConfig;
+    private readonly Device _device;
     
 
     public AtolDto10(Device device)
     {
-        _deviceConfig = device;
+        _device = device;
     }
 
 
@@ -150,7 +150,7 @@ public class AtolDto10 : IFiscalRegistrarDevice
     {
         WriteOfdAttribute(Enums.OfdAttributes.CashierName, cashier.Name);
 
-        var ffdV = _deviceConfig.DeviceSpecificConfig.Deserialize<Objects.CountrySpecificData.Russia.KkmConfig>()?.FfdVersion;
+        var ffdV = _device.DeviceSpecificConfig.Deserialize<Objects.CountrySpecificData.Russia.KkmConfig>()?.FfdVersion;
 
         if (ffdV > Enums.FFdVersions.Ffd100 && cashier.TaxId != null)
         {
@@ -232,7 +232,7 @@ public class AtolDto10 : IFiscalRegistrarDevice
         {
             case Enums.ReportTypes.ZReport:
 
-                var ffdV = _deviceConfig.DeviceSpecificConfig.Deserialize<Objects.CountrySpecificData.Russia.KkmConfig>()?.FfdVersion;
+                var ffdV = _device.DeviceSpecificConfig.Deserialize<Objects.CountrySpecificData.Russia.KkmConfig>()?.FfdVersion;
 
                 if (ffdV != Enums.FFdVersions.Offline)
                 {
@@ -261,7 +261,7 @@ public class AtolDto10 : IFiscalRegistrarDevice
     {
         LogHelper.Write("ККМ АТОЛ: открытие чека");
 
-        var ffdV = _deviceConfig.DeviceSpecificConfig.Deserialize<Objects.CountrySpecificData.Russia.KkmConfig>()?.FfdVersion;
+        var ffdV = _device.DeviceSpecificConfig.Deserialize<Objects.CountrySpecificData.Russia.KkmConfig>()?.FfdVersion;
         var receiptData = receipt?.CountrySpecificData.Deserialize<Objects.CountrySpecificData.Russia.ReceiptData>() ?? new Objects.CountrySpecificData.Russia.ReceiptData();
         if (ffdV == Enums.FFdVersions.Ffd120)
         {
@@ -353,7 +353,7 @@ public class AtolDto10 : IFiscalRegistrarDevice
     {
         LogHelper.Write("ККМ АТОЛ регистрация позиции");
 
-        var ffdV = _deviceConfig.DeviceSpecificConfig.Deserialize<Objects.CountrySpecificData.Russia.KkmConfig>()?.FfdVersion;
+        var ffdV = _device.DeviceSpecificConfig.Deserialize<Objects.CountrySpecificData.Russia.KkmConfig>()?.FfdVersion;
         var receiptItemData = item.CountrySpecificData.Deserialize<Objects.CountrySpecificData.Russia.ReceiptItemData>();
 
         _driver.setParam(_driver.LIBFPTR_PARAM_TAX_TYPE, _driver.LIBFPTR_TAX_NO);
@@ -484,16 +484,16 @@ public class AtolDto10 : IFiscalRegistrarDevice
         }
 
 
-        if (_deviceConfig.Connection.ConnectionType == DeviceConnection.ConnectionTypes.ComPort)
+        if (_device.Connection.ConnectionType == DeviceConnection.ConnectionTypes.ComPort)
         {
-            if (_deviceConfig.Connection.ComPort == null)
+            if (_device.Connection.ComPort == null)
             {
                 throw new NullReferenceException();
             }
 
             _driver.setSingleSetting(_driver.LIBFPTR_SETTING_MODEL, _driver.LIBFPTR_MODEL_ATOL_AUTO.ToString());
             _driver.setSingleSetting(_driver.LIBFPTR_SETTING_PORT, _driver.LIBFPTR_PORT_COM.ToString());
-            _driver.setSingleSetting(_driver.LIBFPTR_SETTING_COM_FILE, $"{_deviceConfig.Connection.ComPort.PortName}");
+            _driver.setSingleSetting(_driver.LIBFPTR_SETTING_COM_FILE, $"{_device.Connection.ComPort.PortName}");
             _driver.setSingleSetting(_driver.LIBFPTR_SETTING_BAUDRATE, _driver.LIBFPTR_PORT_BR_115200.ToString());
             _driver.applySingleSettings();
         }
