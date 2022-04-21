@@ -22,7 +22,7 @@ public class FiscalRegistrarFacade:IDisposable
             case Enums.KkmTypes.Atol8:
                 break;
             case Enums.KkmTypes.Atol10:
-                _kkm = new AtolDto10Device(device);
+                _kkm = new AtolDto10(device);
                 break;
             case Enums.KkmTypes.AtolWebServer:
                 break;

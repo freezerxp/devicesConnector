@@ -42,7 +42,15 @@ public class ReceiptData
     /// </summary>
     public List<ReceiptPayment> Payments { get; set; }
 
+    /// <summary>
+    /// Специфичные для страны данные (ФФД, Маркировка)
+    /// </summary>
     public JsonNode CountrySpecificData { get; set; }
+
+    /// <summary>
+    /// Печатать ли бумажный чек 
+    /// </summary>
+    public bool IsPrintReceipt { get; set; } = true;
 
 }
 

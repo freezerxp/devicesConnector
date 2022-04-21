@@ -1,9 +1,7 @@
 ﻿using System.Text.Json;
-using devicesConnector.Common;
 using devicesConnector.Configs;
 
 using devicesConnector.FiscalRegistrar.Objects;
-using devicesConnector.FiscalRegistrar.Objects.CountrySpecificData;
 using devicesConnector.FiscalRegistrar.Objects.CountrySpecificData.Russia;
 using Enums = devicesConnector.FiscalRegistrar.Objects.Enums;
 
@@ -146,7 +144,7 @@ public partial class KkmServer : IFiscalRegistrarDevice
 
             _kkmCheckCommand.TaxVariant = ruData.TaxVariantIndex;
 
-            _kkmCheckCommand.NotPrint = ruData.IsPrintReceipt == false;
+            _kkmCheckCommand.NotPrint = receipt.IsPrintReceipt == false;
         }
 
         #endregion

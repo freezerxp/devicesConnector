@@ -5,10 +5,7 @@
 /// </summary>
 public class ReceiptData
 {
-    /// <summary>
-    /// Печатать ли бумажный чек 
-    /// </summary>
-    public bool IsPrintReceipt { get; set; } = true;
+   
 
     /// <summary>
     /// Адрес для отправки электронного чека

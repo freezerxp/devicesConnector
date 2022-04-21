@@ -2,7 +2,7 @@
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Text.Json;
-using System.Text.Json.Nodes;
+
 using devicesConnector.Common;
 using devicesConnector.Configs;
 using devicesConnector.FiscalRegistrar.Helpers;
@@ -12,7 +12,7 @@ using Enums = devicesConnector.FiscalRegistrar.Objects.Enums;
 
 namespace devicesConnector.FiscalRegistrar.Devices.Russia;
 
-public class AtolDto10Device : IFiscalRegistrarDevice
+public class AtolDto10 : IFiscalRegistrarDevice
 {
     /// <summary>
     /// Драйвер
@@ -22,10 +22,10 @@ public class AtolDto10Device : IFiscalRegistrarDevice
     /// <summary>
     /// Настройки устройства
     /// </summary>
-    private Device _deviceConfig;
+    private readonly Device _deviceConfig;
     
 
-    public AtolDto10Device(Device device)
+    public AtolDto10(Device device)
     {
         _deviceConfig = device;
     }
@@ -324,7 +324,7 @@ public class AtolDto10Device : IFiscalRegistrarDevice
         _driver.setParam(_driver.LIBFPTR_PARAM_RECEIPT_TYPE, checkType);
 
 
-        if (receiptData.IsPrintReceipt == false)
+        if (receipt.IsPrintReceipt == false)
         {
             LogHelper.Write("Выключаем печать бумажного чека АТОЛ");
             _driver.setParam(_driver.LIBFPTR_PARAM_RECEIPT_ELECTRONICALLY, true);
