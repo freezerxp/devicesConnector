@@ -38,7 +38,7 @@
       "Connection": {
         "ConnectionType": 1,
         "ComPort": {
-          "PortName": "COM8",
+          "PortName": "COM13",
           "Speed": 9600
         }
       }
