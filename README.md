@@ -10,3 +10,12 @@
 Присоединяйтесь к обсуждению: https://t.me/+9pSYGuGPN5VjYTUy
 
 Разработано в <a href="https://gbsmarket.ru">GBS.Market Team</a> при участии <a href="https://midays.ru/">MiDays Commerce</a>
+
+---
+Реализовано и частично тестировалось на живых ККМ:
+- АТОЛ ДТО 10
+- ВикиПринт
+- ККМ Сервер
+
+Не тестировалось:
+- Порт
