@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Text.Json;
 using devicesConnector.Configs;
+using devicesConnector.FiscalRegistrar.Helpers;
 using devicesConnector.FiscalRegistrar.Objects;
 using devicesConnector.FiscalRegistrar.Objects.CountrySpecificData.Russia;
 using devicesConnector.Helpers;
@@ -51,9 +52,9 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
             status.SessionNumber = int.TryParse(sessionNumber, out var n) ? n : 1;
         }
 
-        if (GetInfo(2, RequestType.CounterAndRegisters, out var a))
+        if (GetInfo(2, RequestType.CounterAndRegisters, out var checkNumber))
         {
-            status.CheckNumber = int.TryParse(a, out var n) ? n : 1;
+            status.CheckNumber = int.TryParse(checkNumber, out var n) ? n : 1;
         }
 
         if (GetInfo(1, RequestType.KkmInfo, out var factoryNumber))
@@ -81,9 +82,16 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
             status.FnDateEnd = GetDateTimeFromString(fnEnd);
         }
 
-        if (GetCashSum(out var cashSum))
+
+        if (GetInfo(7, RequestType.KkmInfo, out var cashSum))
         {
-            status.CashSum = cashSum;
+            cashSum = cashSum.Replace(".", string.Empty);
+
+            if (int.TryParse(cashSum, out var kkmSum))
+            {
+                status.CashSum = kkmSum/100M;
+            }
+            
         }
 
         var versionInfo = FileVersionInfo.GetVersionInfo(PiritlibDllPath);
@@ -171,12 +179,16 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
             // SetClientNameInn(checkData.Client);
         }
 
+        var ffdV = _deviceConfig.DeviceSpecificConfig.Deserialize<KkmConfig>()?.FfdVersion;
 
-        //todo: маркировка
-        //if (dc.CheckPrinter.FiscalKkm.FfdVersion == GlobalDictionaries.Devices.FfdVersions.Ffd120)
-        //{
-        //    Ffd120CodeValidation(checkData);
-        //}
+        if (ffdV == Enums.FFdVersions.Ffd120)
+        {
+            Ffd120CodeValidation(receipt);
+        }
+
+
+
+    
     }
 
     public void CloseReceipt()
@@ -219,7 +231,8 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
                 return;
             }
             default:
-                throw new ArgumentOutOfRangeException();
+                RegisterFfd000Ffd100(item);
+                return;
         }
     }
 
@@ -257,8 +270,11 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
 
         if (IsNeedInitialization())
         {
-            var initResult = KkmInitialization();
-            CheckResult(initResult);
+
+            var r = lib_commandStart();
+
+
+            CheckResult(r);
         }
     }
 
@@ -294,18 +310,7 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
     /// <param name="item">Позиция в чеке</param>
     private void RegisterFfd120(ReceiptItem item)
     {
-        //todo: маркировка
-        //var res = 0;
-        //var fullCode = PrepareMarkCodeForFfd120(good.RuMarkedInfo.FullCode);
-
-        //if (fullCode.IsNullOrEmpty() == false)
-        //{
-        //    var status = RuOnlineKkmHelper.GetMarkingCodeStatus(good, checkType);
-
-        //    res = Driver.AddItemMarkingCode(fullCode, status, good.Unit.RuFfdUnitsIndex,
-        //        (int)good.RuMarkedInfo.ValidationResultKkm);
-        //    CheckResult(res);
-        //}
+      
 
         var ruData = item.CountrySpecificData.Deserialize<ReceiptItemData>();
 
@@ -314,15 +319,26 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
             throw new NullReferenceException();
         }
 
+
+        var markCode = RuKkmHelper.PrepareMarkCodeForFfd120(ruData.MarkingInfo.RawCode);
+
+        if (markCode.IsNullOrEmpty() == false)
+        {
+
+            var addMarkingResult = AddItemMarkingCode(markCode, (int)ruData.MarkingInfo.EstimatedStatus, (int)ruData.FfdData.Unit,
+                (int)ruData.MarkingInfo.ValidationResultKkm);
+            CheckResult(addMarkingResult);
+        }
+
         var q = ((int) ruData.FfdData.Unit).ToString("N0");
 
-        var res = lib_addPositionLarge(C1251To866(item.Name), string.Empty, (double) item.Quantity,
+        var addPositionResult = lib_addPositionLarge(C1251To866(item.Name), string.Empty, (double) item.Quantity,
             (double) item.Price, (byte) (item.TaxRateIndex ?? 0), 0,
             (byte) item.DepartmentIndex, 0, 0,
             (int) ruData.FfdData.Method, (int) ruData.FfdData.Subject, q);
 
 
-        CheckResult(res);
+        CheckResult(addPositionResult);
     }
 
     /// <summary>

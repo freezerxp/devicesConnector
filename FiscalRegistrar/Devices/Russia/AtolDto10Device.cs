@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using devicesConnector.Common;
 using devicesConnector.Configs;
+using devicesConnector.FiscalRegistrar.Helpers;
 using devicesConnector.FiscalRegistrar.Objects;
 using devicesConnector.Helpers;
 using Enums = devicesConnector.FiscalRegistrar.Objects.Enums;
@@ -561,8 +562,8 @@ public class AtolDto10Device : IFiscalRegistrarDevice
                 }
 
 
-                receiptItemData.MarkingInfo.RawCode = FiscalRegistrarFacade.PrepareMarkCodeForFfd120(receiptItemData.MarkingInfo.RawCode);
-                receiptItemData.MarkingInfo.EstimatedStatus = FiscalRegistrarFacade.GetMarkingCodeStatus(item, receipt.OperationType);
+                receiptItemData.MarkingInfo.RawCode = RuKkmHelper.PrepareMarkCodeForFfd120(receiptItemData.MarkingInfo.RawCode);
+                receiptItemData.MarkingInfo.EstimatedStatus = RuKkmHelper.GetMarkingCodeStatus(item, receipt.OperationType);
 
                 LogHelper.Write($"Валидация кода: { receiptItemData.MarkingInfo.RawCode}");
                 

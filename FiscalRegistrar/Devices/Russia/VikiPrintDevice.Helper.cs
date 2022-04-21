@@ -2,6 +2,8 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using devicesConnector.FiscalRegistrar.Helpers;
 using devicesConnector.FiscalRegistrar.Objects;
 using devicesConnector.FiscalRegistrar.Objects.CountrySpecificData.Russia;
 using devicesConnector.Helpers;
@@ -13,7 +15,7 @@ public partial class VikiPrintDevice
     /// <summary>
     /// Типы документов
     /// </summary>
-    public enum DocTypes
+    private enum DocTypes
     {
         /// <summary>
         /// Сервисный (нефискальный)
@@ -42,7 +44,7 @@ public partial class VikiPrintDevice
     }
 
 
-    public enum RequestType
+    private enum RequestType
     {
         CounterAndRegisters,
 
@@ -131,31 +133,36 @@ public partial class VikiPrintDevice
         //}
     }
 
-    //private void Ffd120CodeValidation(CheckData.CheckData checkData)
-    //{
+    private void Ffd120CodeValidation(ReceiptData receipt)
+    {
+
+        foreach (var item in receipt.Items)
+        {
+            var ruInfo = item.CountrySpecificData.Deserialize<Objects.CountrySpecificData.Russia.ReceiptItemData>();
+
+            if (ruInfo?.MarkingInfo == null)
+            {
+                continue;
+            }
+
+            ruInfo.MarkingInfo.ValidationResultKkm = 0;
+
+            var markCode = RuKkmHelper.PrepareMarkCodeForFfd120(ruInfo.MarkingInfo.RawCode);
+
+            var status = RuKkmHelper.GetMarkingCodeStatus(item, receipt.OperationType);
+
+            MarkCodeValidation(out var validationResult, markCode, item.Quantity, (int)status, (int)ruInfo.FfdData.Unit);
+
+            ruInfo.MarkingInfo.ValidationResultKkm = validationResult;
+            item.CountrySpecificData = JsonSerializer.SerializeToNode(ruInfo);
+
+            AcceptMarkingCode();
+        }
 
 
-    //    foreach (var item in checkData.GoodsList
-    //                 .Where(item => item.RuMarkedInfo != null && !item.RuMarkedInfo.FullCode.IsNullOrEmpty()))
-    //    {
 
-    //        //обнуляю результат
-    //        item.RuMarkedInfo.ValidationResultKkm = 0;
-
-    //        var fullCode = PrepareMarkCodeForFfd120(item.RuMarkedInfo.FullCode);
-    //        var status = RuOnlineKkmHelper.GetMarkingCodeStatus(item, checkData.CheckType);
-
-
-    //        var r = MarkCodeValidation(out var validationResultKkm, fullCode, item.Quantity, status, item.Unit.RuFfdUnitsIndex);
-    //        //CheckResult(r);
-
-
-    //        item.RuMarkedInfo.ValidationResultKkm = validationResultKkm;
-
-
-    //        AcceptMarkingCode();
-    //    }
-    //}
+    
+    }
 
 
     /// <summary>
@@ -166,7 +173,7 @@ public partial class VikiPrintDevice
     /// <param name="answer">Ответ</param>
     /// <returns></returns>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public static bool GetInfo(ushort requestNumber, RequestType type, out string answer)
+    private static bool GetInfo(ushort requestNumber, RequestType type, out string answer)
     {
         var ans = new MData();
 
@@ -302,31 +309,7 @@ public partial class VikiPrintDevice
     }
 
 
-    /// <summary>
-    /// Получить сумму наличности
-    /// </summary>
-    /// <param name="sum"></param>
-    /// <returns></returns>
-    public static bool GetCashSum(out decimal sum)
-    {
-        var ans = new MData();
-
-        lib_getKktInfo(ref ans, 7);
-
-        var resultCode = ans.errCode;
-
-        if (resultCode != 0)
-        {
-            sum = 0;
-            return false;
-        }
-
-        var strAns = DataToString(ans).Replace(@".", "");
-
-        int.TryParse(strAns, out var kkmSum);
-        sum = kkmSum / 100M;
-        return true;
-    }
+ 
 
 
     private static Encoding CP866()
@@ -395,7 +378,7 @@ public partial class VikiPrintDevice
     /// <param name="cashierName"></param>
     /// <param name="taxSystem"></param>
     /// <returns></returns>
-    public static int OpenDocument(DocTypes docType, int section, string cashierName,
+    private static int OpenDocument(DocTypes docType, int section, string cashierName,
         int taxSystem = 0)
     {
         if (taxSystem == 0)
@@ -407,7 +390,7 @@ public partial class VikiPrintDevice
             taxSystem);
     }
 
-    public static int CloseDocument()
+    private static int CloseDocument()
     {
         var ans = new MData();
         lib_closeDocument(ref ans, 0);
@@ -416,13 +399,16 @@ public partial class VikiPrintDevice
     }
 
 
-    public static int MarkCodeValidation(out int result, string fullCode, decimal q, int itemState, int unit,
+    private static int MarkCodeValidation(out int result , string fullCode, decimal q, int itemState, int unit,
         string qFractional = "")
     {
         var ans = new MData();
         result = 0;
         var qStr = q.ToString(CultureInfo.InvariantCulture);
+
+
         lib_MarkCodeValidation(ref ans, C1251To866(fullCode), qStr, itemState, unit);
+        
         var rs = DataToString(ans);
 
         if (rs.IsNullOrEmpty() == false)
@@ -438,31 +424,25 @@ public partial class VikiPrintDevice
         return ans.errCode;
     }
 
-    public static int AcceptMarkingCode()
+    private static int AcceptMarkingCode()
     {
         var ans = new MData();
 
-        var r = lib_ConfirmMarkCode(ref ans);
+        lib_ConfirmMarkCode(ref ans);
 
         return ans.errCode;
     }
 
-    public static int AddItemMarkingCode(string fullCode, int itemState, int unit, int validResult)
+    private static int AddItemMarkingCode(string fullCode, int itemState, int unit, int validResult)
     {
         var r = lib_AddMarkCode(fullCode, itemState, unit, validResult);
 
         return r;
     }
 
-    public static int KkmInitialization()
-    {
-        var r = lib_commandStart();
 
 
-        return r;
-    }
-
-    public static int SetClientAddress(string address)
+    private static int SetClientAddress(string address)
     {
         if (address.IsNullOrEmpty())
         {
@@ -473,7 +453,7 @@ public partial class VikiPrintDevice
         return r;
     }
 
-    public static bool SetClientInn(string inn)
+    private static bool SetClientInn(string inn)
     {
         if (inn.IsNullOrEmpty())
         {
@@ -484,7 +464,7 @@ public partial class VikiPrintDevice
         return r == 0;
     }
 
-    public static bool SetClientName(string name)
+    private static bool SetClientName(string name)
     {
         if (name.IsNullOrEmpty())
         {
@@ -495,7 +475,7 @@ public partial class VikiPrintDevice
         return r == 0;
     }
 
-    public static int SetPrintCheck(int i)
+    private static int SetPrintCheck(int i)
     {
         var r = lib_WriteSettingsTable(1, 7, $"{i}");
         return r;
@@ -508,7 +488,7 @@ public partial class VikiPrintDevice
 
         CheckResult(los);
 
-        return current[0] == '1';
+        return current[0] == 1;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -529,7 +509,7 @@ public partial class VikiPrintDevice
     /// <summary>
     /// Относительный путь к dll
     /// </summary>
-    public const string PiritlibDllPath = "dll\\kkm\\vikiprint\\PiritLib.dll";
+    private const string PiritlibDllPath = "dll\\kkm\\vikiprint\\PiritLib.dll";
 
     /// <summary>
     /// Открыть порт
