@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using devicesConnector.Common;
 using devicesConnector.Configs;
-using devicesConnector.FiscalRegistrar.Drivers;
+
 using devicesConnector.FiscalRegistrar.Objects;
 using devicesConnector.FiscalRegistrar.Objects.CountrySpecificData;
 using devicesConnector.FiscalRegistrar.Objects.CountrySpecificData.Russia;
@@ -9,28 +9,28 @@ using Enums = devicesConnector.FiscalRegistrar.Objects.Enums;
 
 namespace devicesConnector.FiscalRegistrar.Devices.Russia;
 
-public class KkmServerDevice : IFiscalRegistrarDevice
+public partial class KkmServer : IFiscalRegistrarDevice
 {
-    private KkmServerDriver _driver;
 
-    private KkmServerDriver.KkmPrintCheck _kkmCheckCommand;
+    private Device _device;
+    private KkmPrintCheck _kkmCheckCommand;
 
-    public KkmServerDevice(Device device)
+    public KkmServer(Device device)
     {
-        var lan = device.Connection.Lan;
+        _device = device;
 
-        _driver = new KkmServerDriver(lan);
+
     }
 
 
 
     public KkmStatus GetStatus()
     {
-        var c = new KkmServerDriver.KkmGetInfo();
+        var c =new KkmGetInfo();
 
-     var r=  _driver.SendCommand(c);
+     var r=  SendCommand(c);
 
-     var answer =r.Rezult.Deserialize< KkmServerDriver.KkmServerKktInfoAnswer> ();
+     var answer =r.Rezult.Deserialize< KkmServerKktInfoAnswer> ();
 
         var status = new KkmStatus
         {
@@ -60,8 +60,8 @@ public class KkmServerDevice : IFiscalRegistrarDevice
 
     public void OpenSession(Cashier cashier)
     {
-        var c = new KkmServerDriver.KkmOpenSession();
-        _driver.SendCommand(c);
+        var c = new KkmOpenSession();
+        SendCommand(c);
 
     }
 
@@ -70,14 +70,14 @@ public class KkmServerDevice : IFiscalRegistrarDevice
         switch (type)
         {
             case Enums.ReportTypes.ZReport:
-                _driver.SendCommand(new KkmServerDriver.KkmCloseShift
+                SendCommand(new KkmCloseShift
                 {
                     CashierName = cashier.Name,
                     CashierVATIN = cashier.TaxId
                 });
                 break;
             case Enums.ReportTypes.XReport:
-                _driver.SendCommand(new KkmServerDriver.KkmGetXReport
+                SendCommand(new KkmGetXReport
                 {
 
                 });
@@ -100,7 +100,7 @@ public class KkmServerDevice : IFiscalRegistrarDevice
         }
 
         //регистрация кассира
-        _kkmCheckCommand = new KkmServerDriver.KkmPrintCheck()
+        _kkmCheckCommand = new KkmPrintCheck()
         {
             CashierName = receipt.Cashier.Name,
             CashierVATIN = receipt.Cashier.TaxId
@@ -163,7 +163,7 @@ public class KkmServerDevice : IFiscalRegistrarDevice
 
     public void CloseReceipt()
     {
-        _driver.SendCommand(_kkmCheckCommand);
+        SendCommand(_kkmCheckCommand);
         
     }
 
@@ -189,10 +189,10 @@ public class KkmServerDevice : IFiscalRegistrarDevice
 
  
         //позиция в чеке
-       var cs = new KkmServerDriver.KkmPrintCheck.CheckString
+       var cs = new KkmPrintCheck.CheckString
        {
            //позиция для регистрации товара
-           Register = new KkmServerDriver.KkmPrintCheck.Register
+           Register = new KkmPrintCheck.Register
            {
                Name = item.Name,
                Price = item.Price,
@@ -217,7 +217,7 @@ public class KkmServerDevice : IFiscalRegistrarDevice
 
            if (ruData.MarkingInfo != null)
            {
-                cs.Register.GoodCodeData = new KkmServerDriver.KkmPrintCheck.Register.GoodCode()
+                cs.Register.GoodCodeData = new KkmPrintCheck.Register.GoodCode()
                {
                    BarCode = ruData.MarkingInfo.RawCode,
                    AcceptOnBad = true,
@@ -273,27 +273,27 @@ public class KkmServerDevice : IFiscalRegistrarDevice
 
     public void CashIn(decimal sum, Cashier cashier)
     {
-        var c = new KkmServerDriver.KkmCashIn
+        var c = new KkmCashIn
         {
             CashierName = cashier.Name,
             CashierVATIN = cashier.TaxId,
             Amount = sum
         };
 
-        _driver.SendCommand(c);
+        SendCommand(c);
 
     }
 
     public void CashOut(decimal sum, Cashier cashier)
     {
-        var c = new KkmServerDriver.KkmCashOut
+        var c = new KkmCashOut
         {
             CashierName = cashier.Name,
             CashierVATIN = cashier.TaxId,
             Amount = sum
         };
 
-        _driver.SendCommand(c);
+        SendCommand(c);
     }
 
     public void Dispose()

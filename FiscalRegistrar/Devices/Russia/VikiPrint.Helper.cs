@@ -10,7 +10,7 @@ using devicesConnector.Helpers;
 
 namespace devicesConnector.FiscalRegistrar.Devices.Russia;
 
-public partial class VikiPrintDevice
+public partial class VikiPrint
 {
     /// <summary>
     /// Типы документов

@@ -8,11 +8,11 @@ using devicesConnector.Helpers;
 
 namespace devicesConnector.FiscalRegistrar.Devices.Russia;
 
-public partial class VikiPrintDevice : IFiscalRegistrarDevice
+public partial class VikiPrint : IFiscalRegistrarDevice
 {
     private readonly Device _deviceConfig;
 
-    public VikiPrintDevice(Device device)
+    public VikiPrint(Device device)
     {
         _deviceConfig = device;
     }

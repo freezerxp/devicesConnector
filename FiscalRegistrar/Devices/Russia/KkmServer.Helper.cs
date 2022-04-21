@@ -6,22 +6,14 @@ using devicesConnector.FiscalRegistrar.Objects;
 using devicesConnector.Helpers;
 using Enums = devicesConnector.FiscalRegistrar.Objects.Enums;
 
-namespace devicesConnector.FiscalRegistrar.Drivers;
+namespace devicesConnector.FiscalRegistrar.Devices.Russia;
 
 /// <summary>
 /// Драйвер ККМ Сервера
 /// </summary>
-public class KkmServerDriver
+public partial class KkmServer
 {
-    /// <summary>
-    /// Параметры подключения к ККМ Серверу
-    /// </summary>
-    private DeviceConnection.LanConnection _lanConnection;
-
-    public KkmServerDriver(DeviceConnection.LanConnection lanConnection)
-    {
-        _lanConnection = lanConnection;
-    }
+   
 
     /// <summary>
     /// Отправка команды на ККМ Сервер
@@ -81,21 +73,28 @@ public class KkmServerDriver
     /// <returns>Объект ответа</returns>
     private KkmServerAnswer DoCommand(KkmServerCommand command)
     {
-        var urlAddress = _lanConnection.HostUrl;
+        var lan = _device.Connection.Lan;
+
+        if (lan == null)
+        {
+            throw new NullReferenceException();
+        }
+
+        var urlAddress = lan.HostUrl;
 
         if (urlAddress.ToLower().StartsWith(@"http://") == false)
         {
             urlAddress = @"http://" + urlAddress;
         }
 
-        var url = urlAddress + @":" + _lanConnection.PortNumber + @"/Execute";
+        var url = urlAddress + @":" + lan.PortNumber + @"/Execute";
 
         //базовая авторизация
         var credentialCache = new CredentialCache
         {
             {
                 new Uri(url), "Basic",
-                new NetworkCredential(_lanConnection.UserLogin, _lanConnection.UserPassword)
+                new NetworkCredential(lan.UserLogin, lan.UserPassword)
             }
         };
 

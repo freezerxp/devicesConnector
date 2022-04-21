@@ -29,12 +29,12 @@ public class FiscalRegistrarFacade:IDisposable
             case Enums.KkmTypes.ShtrihM:
                 break;
             case Enums.KkmTypes.VikiPrint:
-                _kkm = new VikiPrintDevice(device);
+                _kkm = new VikiPrint(device);
                 break;
             case Enums.KkmTypes.Mercury:
                 break;
             case Enums.KkmTypes.KkmServer:
-                _kkm = new KkmServerDevice(device);
+                _kkm = new KkmServer(device);
                 break;
             case Enums.KkmTypes.PortDriverRu:
                 _kkm = new PortDriverRu(device);
