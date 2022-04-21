@@ -147,13 +147,13 @@ public class AtolDto10Device : IFiscalRegistrarDevice
 
     private void OperatorLogin(Cashier cashier)
     {
-        WriteOfdAttribute((int) Enums.OfdAttributes.CashierName, cashier.Name);
+        WriteOfdAttribute(Enums.OfdAttributes.CashierName, cashier.Name);
 
         var ffdV = _deviceConfig.DeviceSpecificConfig.Deserialize<Objects.CountrySpecificData.Russia.KkmConfig>()?.FfdVersion;
 
         if (ffdV > Enums.FFdVersions.Ffd100 && cashier.TaxId != null)
         {
-            WriteOfdAttribute((int) Enums.OfdAttributes.CashierInn, cashier.TaxId);
+            WriteOfdAttribute(Enums.OfdAttributes.CashierInn, cashier.TaxId);
         }
 
         _driver.operatorLogin();
@@ -166,7 +166,7 @@ public class AtolDto10Device : IFiscalRegistrarDevice
     /// </summary>
     /// <param name="ofdAttributeNumber">Номер атрибута</param>
     /// <param name="value">значение атрибута</param>
-    private void WriteOfdAttribute(int ofdAttributeNumber, object value)
+    private void WriteOfdAttribute(Enums.OfdAttributes ofdAttributeNumber, object value)
     {
         if (string.IsNullOrEmpty(value.ToString()))
         {
@@ -175,7 +175,7 @@ public class AtolDto10Device : IFiscalRegistrarDevice
 
 
         Console.WriteLine($"n: {ofdAttributeNumber}; v: {value}");
-        _driver.setParam(ofdAttributeNumber, value);
+        _driver.setParam((int)ofdAttributeNumber, value);
 
         CheckResult();
     }
@@ -261,8 +261,7 @@ public class AtolDto10Device : IFiscalRegistrarDevice
         LogHelper.Write("ККМ АТОЛ: открытие чека");
 
         var ffdV = _deviceConfig.DeviceSpecificConfig.Deserialize<Objects.CountrySpecificData.Russia.KkmConfig>()?.FfdVersion;
-
-
+        var receiptData = receipt?.CountrySpecificData.Deserialize<Objects.CountrySpecificData.Russia.ReceiptData>() ?? new Objects.CountrySpecificData.Russia.ReceiptData();
         if (ffdV == Enums.FFdVersions.Ffd120)
         {
             Ffd120CodeValidation(receipt);
@@ -273,14 +272,10 @@ public class AtolDto10Device : IFiscalRegistrarDevice
         {
             OperatorLogin(receipt.Cashier);
 
-            var ofdTaxCode = receipt.CountrySpecificData.Deserialize<Objects.CountrySpecificData.Russia.ReceiptData>()!.TaxVariantIndex;
-
-           
-
-            if (ofdTaxCode > 0)
+            if (receiptData.TaxVariantIndex > 0)
             {
 
-                WriteOfdAttribute((int)Enums.OfdAttributes.TaxSystem, ofdTaxCode);
+                WriteOfdAttribute(Enums.OfdAttributes.TaxSystem, receiptData.TaxVariantIndex);
 
                
 
@@ -293,11 +288,11 @@ public class AtolDto10Device : IFiscalRegistrarDevice
                     _driver.utilFormTlv();
                 }
 
-                WriteOfdAttribute((int)Enums.OfdAttributes.ClientName, receipt.Contractor.Name);
+                WriteOfdAttribute(Enums.OfdAttributes.ClientName, receipt.Contractor.Name);
 
                 if (!receipt.Contractor.TaxId.IsNullOrEmpty())
                 {
-                    WriteOfdAttribute((int)Enums.OfdAttributes.ClientInn, receipt.Contractor.TaxId);
+                    WriteOfdAttribute(Enums.OfdAttributes.ClientInn, receipt.Contractor.TaxId);
                 }
 
                 
@@ -313,7 +308,7 @@ public class AtolDto10Device : IFiscalRegistrarDevice
                 }
             }
 
-            //SendDigitalCheck(checkData.AddressForDigitalCheck);
+            WriteOfdAttribute(Enums.OfdAttributes.ClientEmailPhone, receiptData.DigitalReceiptAddress ?? string.Empty);
         }
 
         var checkType = receipt.OperationType switch
@@ -328,12 +323,12 @@ public class AtolDto10Device : IFiscalRegistrarDevice
         _driver.setParam(_driver.LIBFPTR_PARAM_RECEIPT_TYPE, checkType);
 
 
-        //if (DevicesConfig.CheckPrinter.FiscalKkm.IsAlwaysNoPrintCheck)
-        //{
-        //    LogHelper.Debug("Выключаем печать бумажного чека АТОЛ");
-        //    AtolDriver.setParam(AtolDriver.LIBFPTR_PARAM_RECEIPT_ELECTRONICALLY, true);
+        if (receiptData.IsPrintReceipt == false)
+        {
+            LogHelper.Write("Выключаем печать бумажного чека АТОЛ");
+            _driver.setParam(_driver.LIBFPTR_PARAM_RECEIPT_ELECTRONICALLY, true);
 
-        //}
+        }
 
         _driver.openReceipt();
 
@@ -414,8 +409,6 @@ public class AtolDto10Device : IFiscalRegistrarDevice
 
 
         CheckResult();
-
-        //PrintNonFiscalStrings(good.CommentForFiscalCheck.Select(x => new NonFiscalString(x)).ToList());
     }
 
 
@@ -472,7 +465,11 @@ public class AtolDto10Device : IFiscalRegistrarDevice
 
     public void PrintText(string text)
     {
-        throw new NotImplementedException();
+        _driver.setParam(_driver.LIBFPTR_PARAM_TEXT, text);
+        _driver.setParam(_driver.LIBFPTR_PARAM_TEXT_WRAP, 1);
+        _driver.setParam(_driver.LIBFPTR_PARAM_ALIGNMENT, 0);
+        _driver.printText();
+        CheckResult();
     }
 
     public void Connect()

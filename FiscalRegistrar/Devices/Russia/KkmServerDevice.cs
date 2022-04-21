@@ -145,6 +145,8 @@ public class KkmServerDevice : IFiscalRegistrarDevice
             }
 
             _kkmCheckCommand.TaxVariant = ruData.TaxVariantIndex;
+
+            _kkmCheckCommand.NotPrint = ruData.IsPrintReceipt == false;
         }
 
         #endregion

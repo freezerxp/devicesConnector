@@ -45,7 +45,9 @@
       }
     ],
     "CountrySpecificData": {
-      "TaxVariantIndex": 1
+      "TaxVariantIndex": 1,
+      "DigitalReceiptAddress": "",
+      "IsPrintReceipt": true
     }
   }
 
