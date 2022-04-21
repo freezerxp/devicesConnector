@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using devicesConnector.Common;
 using devicesConnector.Configs;
+using devicesConnector.Helpers;
 
 namespace devicesConnector;
 
@@ -67,16 +68,24 @@ public class MainMapCreator : IMapCreator
 
             qr.AddToQueue(jn);
 
+            var status = Answer.Statuses.Wait;
+
+
             if (c.WithOutQueue) //как бы без очереди, сразу возвращаем результат
             {
-                //ждем 5сек на выполнение команды в очереди
-                Thread.Sleep(5_000);
+              
+
+                do
+                {
+                    status = qr.GetCommandState(c.CommandId).Status;
+                    Thread.Sleep(100);
+                } while (status.IsEither(Answer.Statuses.Wait, Answer.Statuses.Run));
 
                 return GetResult(c.CommandId);
             }
 
             //все хорошо
-            return Results.Ok(new Answer(Answer.Statuses.Wait, null)
+            return Results.Ok(new Answer(status, null)
                 {
                     CommandId = c.CommandId,
                     DeviceId = c.DeviceId
