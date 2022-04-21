@@ -291,13 +291,11 @@ public class ShtihM : IFiscalRegistrarDevice
         //RegisterAllCheckDiscount();
 
 
-        //RegisterAllPayments();
+        RegisterAllPayments();
 
-        for (int i = 1; i < 17; i++) //не работает так
-        {
-            var s = $"Summ{i}";
-            _driver[s] = Payments[i]; //должно сработать
-        }
+     
+
+        
 
         var ffdV = _device.DeviceSpecificConfig.Deserialize<Objects.CountrySpecificData.Russia.KkmConfig>()
             ?.FfdVersion;
@@ -567,10 +565,8 @@ public class ShtihM : IFiscalRegistrarDevice
 
     private void RegisterAllPayments()
     {
-     //возможно, не нужно
-     //в методе закрытия чека переписано
-
-
+     
+        //возможно как-то иначе это реализовать?
 
         _driver.Summ1 = Payments[1];
         _driver.Summ2 = Payments[2];
