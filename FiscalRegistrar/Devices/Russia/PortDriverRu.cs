@@ -202,6 +202,13 @@ namespace devicesConnector.FiscalRegistrar.Devices.Russia
             CheckResult();
         }
 
+      
+
+        public void OpenCashBox()
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Открытие смены
         /// </summary>
@@ -403,7 +410,7 @@ namespace devicesConnector.FiscalRegistrar.Devices.Russia
         /// Обрезка ленты
         /// </summary>
         /// <remarks>При вызове данного метода на ККТ производится отрезка ленты (только для моделей ПОРТ-600Ф и ПОРТ-1000Ф).</remarks>
-        private void CutPaper()
+        public void CutPaper()
         {
             _driver.CutPaper();
         }

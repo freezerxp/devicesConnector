@@ -298,6 +298,16 @@ public partial class VikiPrint : IFiscalRegistrarDevice
         CashInOut(-sum, cashier);
     }
 
+    public void CutPaper()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void OpenCashBox()
+    {
+        throw new NotImplementedException();
+    }
+
 
     public void Dispose()
     {
@@ -312,10 +322,13 @@ public partial class VikiPrint : IFiscalRegistrarDevice
     {
         var ruData = item.CountrySpecificData.Deserialize<ReceiptItemData>();
 
-        if (ruData == null)
+        if (ruData?.FfdData == null)
         {
             throw new NullReferenceException();
         }
+
+      
+
 
         if (ruData.MarkingInfo != null)
         {
@@ -330,10 +343,7 @@ public partial class VikiPrint : IFiscalRegistrarDevice
             }
         }
 
-        if (ruData.FfdData == null)
-        {
-            throw new NullReferenceException();
-        }
+       
 
 
         var q = ((int) ruData.FfdData.Unit).ToString("N0");

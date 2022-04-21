@@ -294,6 +294,16 @@ public partial class KkmServer : IFiscalRegistrarDevice
         SendCommand(c);
     }
 
+    public void CutPaper()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void OpenCashBox()
+    {
+        throw new NotImplementedException();
+    }
+
     public void Dispose()
     {
         //

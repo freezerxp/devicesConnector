@@ -536,6 +536,16 @@ public class AtolDto10 : IFiscalRegistrarDevice
         CheckResult();
     }
 
+    public void CutPaper()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void OpenCashBox()
+    {
+        throw new NotImplementedException();
+    }
+
     public void Dispose()
     {
         Disconnect();

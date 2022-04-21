@@ -2,9 +2,11 @@
   "CommandType": 5,
   "DeviceId": "e4bfd416-8d2f-41ab-9475-2e99208bc330",
   "WithOutQueue": true,
+
   "ReceiptData": {
     "FiscalType": "Fiscal",
     "OperationType": "Sale",
+    "IsPrintReceipt": true,
     "Cashier": {
       "Name": "Ivanov",
       "TaxId": "123456879012"
@@ -46,8 +48,7 @@
     ],
     "CountrySpecificData": {
       "TaxVariantIndex": 1,
-      "DigitalReceiptAddress": "",
-      "IsPrintReceipt": true
+      "DigitalReceiptAddress": ""
     }
   }
 

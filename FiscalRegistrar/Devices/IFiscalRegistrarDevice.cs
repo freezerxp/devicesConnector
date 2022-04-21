@@ -83,4 +83,14 @@ public interface IFiscalRegistrarDevice: IDevice, IDisposable
     /// Изъять наличные
     /// </summary>
     public void CashOut(decimal sum, Cashier cashier);
+
+    /// <summary>
+    /// Отрезать ленту
+    /// </summary>
+    public void CutPaper();
+
+    /// <summary>
+    /// Открыть денежный ящик
+    /// </summary>
+    public void OpenCashBox();
 }

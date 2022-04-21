@@ -34,13 +34,13 @@ public class KkmCommandsManager : ICommandManager
 
         switch (commandType)
         {
-            case Enums.CommandTypes.GetStatus: 
+            case Enums.CommandTypes.GetStatus:
                 GetStatus(kkm, hi);
                 break;
-            case Enums.CommandTypes.OpenSession: 
+            case Enums.CommandTypes.OpenSession:
                 OpenSession(kkm, hi);
                 break;
-            case Enums.CommandTypes.CashInOut: 
+            case Enums.CommandTypes.CashInOut:
                 CashInOut(kkm, hi);
                 break;
             case Enums.CommandTypes.DoReport:
@@ -52,10 +52,31 @@ public class KkmCommandsManager : ICommandManager
             case Enums.CommandTypes.CancelFiscalReceipt:
                 CancelReceipt(kkm, hi);
                 break;
+            case Enums.CommandTypes.CutPaper:
+                CutPaper(kkm, hi);
+                break;
+            case Enums.CommandTypes.OpenCashBox:
+                OpenCashBox(kkm, hi);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
     }
 
-    private static void PrintFiscalReceipt(FiscalRegistrarFacade kkm , CommandQueue cq)
+    private static void OpenCashBox(FiscalRegistrarFacade kkm, CommandQueue cq)
+    {
+        var a = kkm.OpenCashBox;
+        SetResult(a, cq);
+    }
+
+    private static void CutPaper(FiscalRegistrarFacade kkm, CommandQueue cq)
+    {
+        var a = kkm.CutPaper;
+
+        SetResult(a, cq);
+    }
+
+    private static void PrintFiscalReceipt(FiscalRegistrarFacade kkm, CommandQueue cq)
     {
         var c = cq.Command.Deserialize<KkmPrintFiscalReceiptCommand>();
         var a = () => kkm.PrintFiscalReceipt(c.ReceiptData);

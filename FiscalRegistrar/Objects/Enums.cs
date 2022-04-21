@@ -92,7 +92,18 @@ public class Enums
         /// <summary>
         /// Отменить (аннулировать) чек
         /// </summary>
-        CancelFiscalReceipt
+        CancelFiscalReceipt,
+
+        /// <summary>
+        /// Отрезать чековую ленту
+        /// </summary>
+        CutPaper,
+
+        /// <summary>
+        /// Открыть денежный ящик
+        /// </summary>
+        OpenCashBox
+
 
 
     }
