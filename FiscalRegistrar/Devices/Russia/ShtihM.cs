@@ -302,8 +302,13 @@ public class ShtihM : IFiscalRegistrarDevice
 
         if (ffdV != Enums.FFdVersions.Offline)
         {
-            _driver.TaxType = _receipt.CountrySpecificData.Deserialize<Objects.CountrySpecificData.Russia.ReceiptData>()
-                .TaxVariantIndex;
+            var ruData = _receipt.CountrySpecificData.Deserialize<Objects.CountrySpecificData.Russia.ReceiptData>();
+
+            if (ruData?.TaxVariantIndex != null)
+            {
+                _driver.TaxType = ruData.TaxVariantIndex;
+            }
+      
 
 
             CheckResult(_driver.FNCloseCheckEx());
