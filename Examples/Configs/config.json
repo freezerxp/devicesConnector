@@ -41,6 +41,9 @@
           "PortName": "COM13",
           "Speed": 9600
         }
+      },
+      "DeviceSpecificConfig": {
+        "FfdVersion": 4
       }
     }
   ] 

@@ -397,7 +397,7 @@ public partial class VikiPrintDevice : IFiscalRegistrarDevice
             _ => Enums.ErrorTypes.Unknown
         };
 
-    
+        
 
         var ex = new KkmException(string.Empty, errType, resultCode, string.Empty);
 

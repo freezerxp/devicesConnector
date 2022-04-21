@@ -66,6 +66,16 @@ public class MainMapCreator : IMapCreator
             var jn = JsonNode.Parse(json);
             var c = jn.Deserialize<DeviceCommand>();
 
+            //присваиваю новый ИД команды, если небыл указан
+            if (jn["CommandId"] == null)
+            {
+                var commandId = Guid.NewGuid().ToString();
+                jn["CommandId"] = commandId;
+                c.CommandId = commandId;
+            }
+
+          
+
             qr.AddToQueue(jn);
 
             var status = Answer.Statuses.Wait;

@@ -63,7 +63,7 @@ public class CommandsQueueRepository
 
         var cq = new CommandQueue
         {
-            CommandId = commandId ?? Guid.NewGuid().ToString(),
+            CommandId = commandId ,
             Command = command,
             Status = Answer.Statuses.Wait
         };
