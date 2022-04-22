@@ -34,7 +34,7 @@
 - ККМ Казахстан: Порт, (ReKassa, WebKassa - уточнить по NDA?)
 - ККМ Азербайджан: AzSmart
 - ККМ UA: HelpMicro, Excelio, MiniPF54, LeoCas
-- Эквайринг РФ: Сбербанк, Arcus 2, Inpas
+- Эквайринг РФ: Сбербанк, Arcus 2, (Inpas NDA ?)
 - Эквайринг Казахстан: Каспи (Smart POS)
 - Эквайринг UA: Privat, Oschad
 - Торговые весы: Cas, Massa K, Shtrih M, Rongta, Wintec, Atol, Bta
