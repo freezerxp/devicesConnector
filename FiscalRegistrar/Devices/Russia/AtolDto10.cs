@@ -538,12 +538,12 @@ public class AtolDto10 : IFiscalRegistrarDevice
 
     public void CutPaper()
     {
-        throw new NotImplementedException();
+        _driver.cut();
     }
 
     public void OpenCashBox()
     {
-        throw new NotImplementedException();
+        _driver.openDrawer();
     }
 
     public void Dispose()

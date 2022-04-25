@@ -58,6 +58,9 @@ public class KkmCommandsManager : ICommandManager
             case Enums.CommandTypes.OpenCashBox:
                 OpenCashBox(kkm, hi);
                 break;
+            case Enums.CommandTypes.PrintText:
+                PrintText(kkm, hi);
+                break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
@@ -139,5 +142,19 @@ public class KkmCommandsManager : ICommandManager
     {
         var f = kkm.GetStatus;
         SetResult(f, cq);
+    }
+
+    /// <summary>
+    /// Печать нефискальных чеков
+    /// </summary>
+    /// <param name="kkm">ККМ</param>
+    /// <param name="cq">Объект очереди</param>
+    private static void PrintText(FiscalRegistrarFacade kkm, CommandQueue cq)
+    {
+
+        var c = cq.Command.Deserialize<PrintTextCommand>();
+        var a = () => kkm.PrintText(c.Lines);
+
+        SetResult(a, cq);
     }
 }

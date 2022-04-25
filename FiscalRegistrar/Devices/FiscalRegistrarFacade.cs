@@ -43,7 +43,13 @@ public class FiscalRegistrarFacade : IDisposable
     {
         _kkm.CancelReceipt();
     }
-
+    public void PrintText(List<string> lines)
+    {
+        foreach (var line in lines)
+        {
+            _kkm.PrintText(line);
+        }
+    }
     public void OpenSession(Cashier cashier)
     {
         _kkm.OpenSession(cashier);

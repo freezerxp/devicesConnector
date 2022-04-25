@@ -102,7 +102,12 @@ public class Enums
         /// <summary>
         /// Открыть денежный ящик
         /// </summary>
-        OpenCashBox
+        OpenCashBox,
+
+        /// <summary>
+        /// Распечатать нефискальный чек
+        /// </summary>
+        PrintText
 
 
 
