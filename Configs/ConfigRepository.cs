@@ -7,15 +7,18 @@ namespace devicesConnector.Configs;
 /// </summary>
 public class ConfigRepository
 {
+
+        private string _configFilePath = "./Examples/Configs/config.json";
+
+
     /// <summary>
     /// Получить настройки
     /// </summary>
     /// <returns></returns>
     public Config Get()
     {
-        var configFilePath = "./Examples/Configs/config.json";
 
-        var json = System.IO.File.ReadAllText(configFilePath);
+        var json = System.IO.File.ReadAllText(_configFilePath);
 
         var config = JsonSerializer.Deserialize<Config>(json);
 
@@ -29,6 +32,8 @@ public class ConfigRepository
     /// <exception cref="NotImplementedException"></exception>
     public void Save(Config config)
     {
-        throw new NotImplementedException();
+        var json = JsonSerializer.Serialize(config);
+
+       File.WriteAllText(_configFilePath, json);
     }
 }
