@@ -1,0 +1,105 @@
+﻿@page
+
+@using devicesConnector.Common
+@model devicesConnector.Pages.ConfigModel
+@{
+}
+
+
+<h1>Настройки</h1>
+
+
+@{
+
+
+}
+<h2>Устройства</h2>
+<form method="get">
+	<table style="vertical-align: top;">
+		<tr>
+			<td>
+
+				@Html.DropDownListFor(
+					x => x.DeviceId, Model.AllDevices, new
+					{
+						size = "10",
+						style = "width: 200px;",
+						name = "deviceId",
+					})
+
+			</td>
+			<td style="vertical-align: top;">
+				<button value="add" name="Action" type="submit">Добавить</button>
+				<br/>
+
+				<button value="edit" name="Action" type="submit">Редактировать</button>
+			</td>
+		</tr>
+	</table>
+</form>
+
+
+@if (Model.DeviceId != null)
+{
+	<hr/>
+	<form method="post">
+
+		<label>ИД</label><br/> <input name="deviceId" type="text" value="@Model.SelectedDevice().Id"/><br/>
+		<label>Название</label><br/><input name="deviceName" type="text" value="@Model.SelectedDevice().Name"/><br/>
+		<label>Тип устройства</label><br/>
+
+		@Html.DropDownListFor(
+			x => x.SelectedDeviceType, Model.DevicesTypes, new
+			{
+				style = "width: 200px;",
+				onchange = "changeDeviceType()",
+				id = "deviceTypes",
+				name = "deviceType"
+			})
+		<br/>
+
+
+		<div id="kkmTypesList">
+
+
+			<label>Подтип устройства</label><br/>
+			@Html.DropDownListFor(
+				x => x.SelectedKkmType, Model.KkmTypes, new
+				{
+					style = "width: 200px;",
+					id="kkmTypesList"
+				})
+
+		</div>
+		
+
+		<button value="save" name="Action" type="submit">Сохранить</button>
+
+	</form>
+}
+
+
+<script>
+	//управление видимостью селекторов суб-типов
+	function changeDeviceType() {
+		var value = document.getElementById("deviceTypes").value;
+
+		document.getElementById("kkmTypesList").style.visibility = "collapse";
+
+		if (value == "1") { //ккм
+			document.getElementById("kkmTypesList").style.visibility = "visible";
+		} else if (value == "2") { //весы
+
+		}
+
+	}
+
+	
+
+	document.onload = changeDeviceType();
+
+</script>
+
+<script>
+
+</script>
