@@ -151,12 +151,6 @@ namespace devicesConnector.FiscalRegistrar.Devices.Russia
         {
             OpenFiscalInv(receipt);
             CheckResult();
-
-            for (int i = 0; i < receipt.Items.Count; i++)
-                RegisterItem(receipt.Items[i]);;
-            
-            for (int i = 0; i < receipt.Payments.Count; i++)
-                RegisterPayment(receipt.Payments[i]);
         }
 
         public void CloseReceipt()
@@ -167,7 +161,7 @@ namespace devicesConnector.FiscalRegistrar.Devices.Russia
 
         public void CancelReceipt()
         {
-            throw new NotImplementedException();
+            CancelFiscalInv();
         }
 
         public void RegisterItem(ReceiptItem item)
@@ -200,9 +194,7 @@ namespace devicesConnector.FiscalRegistrar.Devices.Russia
         {
             ParishOrConsumption(-sum);
             CheckResult();
-        }
-
-      
+        }      
 
         public void OpenCashBox()
         {

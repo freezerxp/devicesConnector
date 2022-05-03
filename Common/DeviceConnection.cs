@@ -1,4 +1,5 @@
-﻿using System.IO.Ports;
+﻿using devicesConnector.Helpers;
+using System.IO.Ports;
 using System.Text.Json.Serialization;
 
 namespace devicesConnector.Common;
@@ -56,6 +57,10 @@ public class DeviceConnection
     /// </summary>
     public class ComPortConnection
     {
+        public SerialPort SerialPort { get; set; }
+
+        private AutoResetEvent ReceiveNow { get; set; }
+
         /// <summary>
         /// Имя порта
         /// </summary>
@@ -89,11 +94,146 @@ public class DeviceConnection
         /// <summary>
         /// Управление
         /// </summary>
-        public Handshake Handshake { get; set; }
+        public Handshake Handshake { get; set; } = Handshake.None;
 
         /// <summary>
         /// Стоп биты
         /// </summary>
         public StopBits StopBit { get; set; } = StopBits.One;
+
+        #region Работа с COM портом
+
+        /// <summary>
+        /// Настроить COM порт
+        /// </summary>
+        public void SetSerialPort()
+        {
+            this.SerialPort = new SerialPort(this.PortName, this.Speed)
+            {
+                Parity = this.Parity,
+                Handshake = this.Handshake,
+                DataBits = this.DataBit,
+                StopBits = this.StopBit,
+                RtsEnable = true,
+                DtrEnable = true,
+                WriteTimeout = this.TimeOut,
+                ReadTimeout = this.TimeOut
+            };
+        }
+
+        /// <summary>
+        /// Открыть COM порт
+        /// </summary>
+        /// <returns>При успешном открытии вернет true, иначе false</returns>
+        public bool Open()
+        {
+            try
+            {
+                if (SerialPort == null)
+                    return false;
+                
+                if (SerialPort.IsOpen)
+                {
+                    if (!Close())
+                    {
+                        LogHelper.Write("Не удалось закрыть COM порт");
+                        return false;
+                    }
+                }
+
+                this.ReceiveNow = new AutoResetEvent(false);
+                SerialPort.Open();
+                SerialPort.DataReceived += new SerialDataReceivedEventHandler(SerialPort_DataReceived);
+                LogHelper.Write("Успешное открытие COM порта");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.Write("Не удалось открыть COM порт");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Закрываем COM порт
+        /// </summary>
+        /// <returns>Если успешно вернёт true, иначе false</returns>
+        public bool Close()
+        {
+            try
+            {
+                if (SerialPort == null)
+                    return false;
+
+                if (!SerialPort.IsOpen)
+                    return false;
+
+                SerialPort.DataReceived -= SerialPort_DataReceived;
+                SerialPort.Close();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            try
+            {
+                if (e.EventType == SerialData.Chars)
+                {
+                    ReceiveNow.Set();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public byte[] ExecuteCommand(byte[] cmd, int countByte = 1)
+        {
+            try
+            {
+                SerialPort.DiscardOutBuffer();
+                SerialPort.DiscardInBuffer();
+                ReceiveNow.Reset();
+                SerialPort.Write(cmd, 0, cmd.Length);
+                SerialPort.ReadTimeout = TimeOut;
+
+                byte[] input = ReadResponse(countByte);
+                return input;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private byte[] ReadResponse(int byteCount)
+        {
+            byte[] buffer = new byte[byteCount];
+            try
+            {
+                List<byte> listByte = new List<byte>();
+                while (listByte.Count < byteCount)
+                {
+                    byte b = (byte)SerialPort.ReadByte();
+                    listByte.Add(b);
+                }
+                buffer = listByte.ToArray();
+
+                return buffer;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.Write($"Method [ComPortConnection.ReadResponse]; {ex.Message}");
+                return buffer;
+            }
+        }
+
+        #endregion
     }
 }
