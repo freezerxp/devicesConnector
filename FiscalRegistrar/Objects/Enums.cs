@@ -50,7 +50,11 @@ public class Enums
         /// <summary>
         /// ФР ПОРТ (100Ф/600Ф/1000Ф)
         /// </summary>
-        PortDriverRu = 108
+        PortDriverRu = 108,
+        /// <summary>
+        /// Феликс РМФ
+        /// </summary>
+        FeliksRMF = 109
 
         #endregion
 
@@ -402,7 +406,31 @@ public class Enums
         /// <summary>
         /// Ошибка подключения,
         /// </summary>
-        ConnectionError
+        ConnectionError,
+        /// <summary>
+        /// Смена открыта
+        /// </summary>
+        SessionOpen,
+        /// <summary>
+        /// Смена закрыта
+        /// </summary>
+        SessionClose,
+        /// <summary>
+        /// Не верный пароль
+        /// </summary>
+        PasswordIncorrect,
+        /// <summary>
+        /// Открыт фискальный чек
+        /// </summary>
+        FiscalReceiptOpen,
+        /// <summary>
+        /// Чек закрыт
+        /// </summary>
+        ReceiptClose,
+        /// <summary>
+        /// Некорректная команда
+        /// </summary>
+        CommandIncorrect
     }
 
 

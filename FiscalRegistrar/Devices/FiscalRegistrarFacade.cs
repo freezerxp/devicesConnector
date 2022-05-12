@@ -22,6 +22,7 @@ public class FiscalRegistrarFacade : IDisposable
             Enums.KkmTypes.Mercury => throw new NotImplementedException(),
             Enums.KkmTypes.KkmServer => new KkmServer(device),
             Enums.KkmTypes.PortDriverRu => new PortDriverRu(device),
+            Enums.KkmTypes.FeliksRMF => new Feliks(device),
             _ => throw new ArgumentOutOfRangeException(nameof(device.SubType), device.SubType, null)
         };
 
